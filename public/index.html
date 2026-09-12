@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Motorcycle Showroom Management</title>
+<title>AHMAD MOTORS | Showroom Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --primary:#111827;
@@ -196,14 +199,146 @@ table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:11px 12p
 @media(max-width:1100px){.dashboard-premium-shell{grid-template-columns:1fr}.dashboard-side{display:none}.premium-kpis{grid-template-columns:repeat(2,1fr)}.premium-grid,.premium-bottom{grid-template-columns:1fr}}
 @media(max-width:700px){.dashboard-main{padding:18px}.premium-kpis{grid-template-columns:1fr}.dashboard-topbar{flex-direction:column}}
 </style>
-<style>button:disabled{opacity:.65!important;cursor:not-allowed!important}</style>
+<style>
+/* ===== LIGHT LUXURY DESIGN SYSTEM ===== */
+:root{
+  --primary:#242321;--primary-2:#34312d;--accent:#a67c36;--accent-2:#876126;
+  --success:#267354;--warning:#a96820;--danger:#a13c35;--muted:#77716a;
+  --bg:#f5f3ef;--card:#fffefa;--border:#e6e0d6;
+  --shadow:0 12px 36px rgba(50,43,32,.08);--gold-soft:#f4ead7;
+}
+html{scroll-behavior:smooth}
+body{font-family:"DM Sans",Arial,sans-serif;background:radial-gradient(circle at 10% 0,rgba(190,154,91,.09),transparent 30%),var(--bg);color:#272522}
+h1,h2,.brand h1,.dashboard-welcome h2{font-family:"Playfair Display",Georgia,serif;letter-spacing:-.025em}
+button,input,select,textarea{font-family:"DM Sans",Arial,sans-serif}
+button{transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease,color .18s ease}
+button:active{transform:translateY(1px)}button:disabled{opacity:.65!important;cursor:not-allowed!important}
+
+.header{background:linear-gradient(118deg,#23221f,#393630);padding:20px 5%;border-bottom:1px solid rgba(209,177,118,.38);box-shadow:0 10px 34px rgba(28,25,21,.16)}
+.header-inner{max-width:1560px}.brand h1{font-size:29px;font-weight:700}.brand p{color:#cfc7bb;font-size:13px;letter-spacing:.035em}
+.brand{display:flex;align-items:center;gap:15px}.header-monogram{width:50px;height:50px;border:1px solid rgba(220,184,115,.68);border-radius:14px;display:grid;place-items:center;color:#f2d69f;font-family:"Playfair Display",Georgia,serif;font-size:19px;font-weight:700;letter-spacing:.04em;background:linear-gradient(145deg,rgba(210,169,92,.18),rgba(255,255,255,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.16)}
+.brand-copy h1{font-family:"DM Sans",Arial,sans-serif;font-size:27px;letter-spacing:.12em;font-weight:700;line-height:1.05;color:#fffaf0}.brand-copy h1 span{color:#d8b473}.brand-copy p{text-transform:uppercase;font-size:10px;letter-spacing:.2em;margin-top:7px;color:#bdb4a7}
+#serverStatus{background:rgba(255,255,255,.08);color:#f6e9cf;border:1px solid rgba(210,178,119,.42);padding:7px 12px}
+.container{width:94%;max-width:1560px;margin:24px auto 52px}
+.nav{gap:5px;background:rgba(255,254,250,.92);border:1px solid var(--border);border-radius:18px;padding:8px;box-shadow:0 10px 35px rgba(54,45,33,.07);backdrop-filter:blur(14px);position:sticky;top:10px;z-index:90}
+.nav button{background:transparent;color:#615c55;padding:11px 15px;border-radius:11px;font-size:13px;font-weight:600;border:1px solid transparent}
+.nav button:hover{background:#f5efe4;color:#6e4e1f;border-color:#eadcc2;transform:translateY(-1px)}
+.nav button.active{background:#292825;color:#fff8eb;border-color:#292825;box-shadow:0 7px 16px rgba(39,36,31,.18)}
+.nav{display:none!important}
+.container.has-sidebar{display:grid;grid-template-columns:224px minmax(0,1fr);align-items:start;gap:20px}
+.container.has-sidebar>.section{grid-column:2;min-width:0}
+.app-sidebar{grid-column:1;grid-row:1 / span 30;position:sticky;top:18px;min-height:calc(100vh - 36px);border-radius:20px;border:1px solid #494238;box-shadow:0 16px 40px rgba(39,34,27,.14);z-index:80}
+.dashboard-premium-shell{grid-template-columns:1fr!important}
+
+.card,.form-card,.table-wrap,.report-kpi,.reminder-card{background:rgba(255,254,250,.96);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+.card,.report-kpi,.reminder-card{position:relative;overflow:hidden}
+.card::before,.report-kpi::before,.reminder-card::before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(#c6a464,#9a7131)}
+.form-card{padding:26px;margin-bottom:20px}.form-card h2{font-family:"Playfair Display",Georgia,serif;font-size:23px;color:#2c2925;margin-bottom:20px}.form-card h3{color:#4b4640}
+label{font-size:12px;letter-spacing:.025em;color:#5b5650;font-weight:700}
+input,select,textarea{padding:12px 13px;border:1px solid #dcd5ca;border-radius:11px;background:#fff;color:#2c2926;box-shadow:inset 0 1px 2px rgba(44,39,32,.025)}
+input:hover,select:hover,textarea:hover{border-color:#c9b99d}
+input:focus,select:focus,textarea:focus{border-color:#ad8747;box-shadow:0 0 0 4px rgba(174,135,70,.12)}
+input[readonly]{background:#f3f0ea;color:#6f6961}
+.btn{padding:11px 17px;border-radius:11px;font-size:13px;letter-spacing:.01em;box-shadow:0 4px 12px rgba(46,40,31,.07)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 17px rgba(46,40,31,.12)}
+.btn-primary{background:linear-gradient(135deg,#b18a48,#8f682d);color:#fff;border:1px solid #8f682d}.btn-primary:hover{background:linear-gradient(135deg,#9f7838,#75511f)}
+.btn-secondary{background:#f1eee8;color:#393631;border:1px solid #ddd6cc}.btn-success{background:#2e7258}.btn-danger{background:#a8463e}.btn-warning{background:#d5a453;color:#322718}
+.table-wrap{overflow:auto}.table-wrap::-webkit-scrollbar{height:8px}.table-wrap::-webkit-scrollbar-thumb{background:#cfc4b3;border-radius:20px}
+table{background:transparent}th,td{padding:13px 14px;border-color:#ece7df}th{background:#f4f0e9;color:#74695a;font-size:10px;letter-spacing:.09em}tbody tr{transition:background .16s ease}tbody tr:hover{background:#fbf7ef}
+.badge{padding:5px 9px;font-weight:700}.badge-paid,.badge-stock{background:#e6f2eb;color:#286348}.badge-pending,.badge-reserved{background:#f7edd9;color:#8a611f}.badge-partial{background:#e9edf3;color:#465a75}.badge-overdue,.badge-sold{background:#f6e5e2;color:#913c35}
+.notice{background:#faf3e5;border-color:#e9d4ae;color:#765323;border-radius:12px}.summary-box{background:#f7f2e8;border-color:#dfceb0;border-radius:15px}.summary-item{border-color:#e8dfd1;border-radius:12px}.summary-item strong{color:#3c3429}
+.modal{background:rgba(35,31,26,.64);backdrop-filter:blur(5px)}.modal-box{background:#fffefa;border:1px solid #e2d9cb;border-radius:20px;box-shadow:0 30px 80px rgba(28,23,18,.25)}.close{background:#efeae2;color:#575149}
+.message{border:1px solid transparent;border-radius:11px}.success{background:#e6f2eb;color:#286348;border-color:#cce4d6}.error{background:#f6e5e2;color:#913c35;border-color:#eccbc7}.info{background:#eee9de;color:#675332;border-color:#ded0b5}
+
+/* Dashboard is restyled to match the light luxury system. */
+.dashboard-premium{background:#f4f1eb;color:#2c2925;border:1px solid #ded7cc;border-radius:23px;box-shadow:0 22px 55px rgba(54,45,33,.12)}
+.dashboard-premium-shell{grid-template-columns:224px 1fr}
+.dashboard-side{background:linear-gradient(180deg,#272622,#34312c);border-right:1px solid #494238;padding:24px 15px}
+.dashboard-side-logo{background:linear-gradient(135deg,#c9a665,#916b2e);box-shadow:0 8px 20px rgba(166,124,54,.23)}
+.dashboard-side-brand strong{color:#fff8ec}.dashboard-side-brand span,.dashboard-side-label{color:#a9a095}.dashboard-side-label{letter-spacing:.16em}
+.dashboard-side button{color:#c9c1b6;border-radius:11px}.dashboard-side button:hover,.dashboard-side button.active{background:rgba(207,171,105,.14);color:#fff4df;border-color:rgba(213,178,113,.3)}
+.dashboard-profile{border-color:#4a443b}.dashboard-profile small{color:#9e9589}.dashboard-profile strong{color:#f5eee3}
+.dashboard-main{background:radial-gradient(circle at top right,rgba(193,155,88,.12),transparent 28%),#f8f6f1;padding:29px 30px 32px}
+.dashboard-welcome h2{color:#2c2925;font-size:27px}.dashboard-welcome p{color:#817a71}
+.dashboard-date,.dashboard-period,.dashboard-refresh{border-color:#ddd5c9;background:#fffefa;color:#615a51;box-shadow:0 3px 10px rgba(49,42,33,.04)}
+.dashboard-period:focus{border-color:#ad8747}.dashboard-refresh:hover{color:#7a5724;border-color:#b99350;background:#fbf5e9}
+.premium-kpi{border:1px solid #e2dbd0;background:linear-gradient(145deg,#fffefa,#f8f4ed);border-radius:16px;box-shadow:0 9px 24px rgba(53,44,31,.055)}
+.premium-kpi::after{background:rgba(178,137,69,.075)}.premium-kpi-icon{background:#f3e9d7;color:#8c652a}.premium-kpi:nth-child(2) .premium-kpi-icon{color:#377258;background:#e7f1eb}.premium-kpi:nth-child(3) .premium-kpi-icon{color:#66547a;background:#eee9f2}.premium-kpi:nth-child(4) .premium-kpi-icon{color:#a56e21;background:#f7ecd8}
+.premium-kpi-label{color:#82786b}.premium-kpi-value{color:#2d2924}.premium-kpi-meta{color:#8a8278}
+.premium-panel,.finance-mini{background:#fffefa;border-color:#e2dbd0;box-shadow:0 9px 24px rgba(53,44,31,.05)}
+.premium-panel-head h3{color:#3a352f}.premium-panel-head span,.legend-row{color:#8a8176}.sales-chart{background:linear-gradient(to top,rgba(112,97,76,.1) 1px,transparent 1px) 0 100%/100% 25%}.sales-bar.sales{background:linear-gradient(180deg,#c7a45f,#98702e)}.sales-bar.collection{background:linear-gradient(180deg,#77736c,#44413c)}.sales-axis{color:#958c80}.legend-blue{background:#ae8541}.legend-purple{background:#514e49}
+.inventory-donut{background:conic-gradient(#b68c48 0 38%,#55514b 38% 66%,#d2a451 66% 82%,#4b876b 82% 94%,#d9d2c7 94% 100%)}.inventory-donut::after{background:#fffefa;border-color:#e0d8cc}.inventory-donut-center{color:#342f29}.inventory-donut-center span,.inv-row{color:#887f74}.inv-value{color:#3c3731}
+.premium-table th,.premium-table td{border-color:#ebe5dc;color:#746d64}.premium-table th{color:#8d8274}.premium-table td strong{color:#36322d}.status-low{color:#963e37;background:#f5e4e1}
+.activity-item{border-color:#ebe5dc}.activity-icon{background:#f3eadb}.activity-item strong{color:#3b3731}.activity-item span{color:#8b8277}.premium-quick button{border-color:#ded5c7;background:#f8f4ed;color:#665d52}.premium-quick button:hover{border-color:#bd9654;color:#6f4c18;background:#fbf3e5}
+.finance-mini span{color:#8b8071}.finance-mini strong{color:#332f2a}.mini-link{color:#936b2e}.alert-card{background:#faf7f1;border-color:#e6dfd4}.alert-card strong{color:#3c3731}.alert-card span{color:#8b8277}
+.report-hero{background:linear-gradient(135deg,#2b2925,#423d35);border-color:#554b3e;color:#fff9ee;box-shadow:0 14px 36px rgba(46,39,30,.16)}
+.footer{color:#817a70}
+
+@media(max-width:1100px){.dashboard-premium-shell{grid-template-columns:1fr}.container{width:96%}.dashboard-side.app-sidebar{display:flex}.container.has-sidebar{grid-template-columns:200px minmax(0,1fr);gap:14px}}
+@media(max-width:700px){.header{padding:15px 4%}.header-monogram{width:43px;height:43px;border-radius:12px;font-size:16px}.brand{gap:11px}.brand-copy h1{font-size:20px;letter-spacing:.09em}.brand-copy p{font-size:8px;letter-spacing:.13em}.container{margin-top:16px}.container.has-sidebar{grid-template-columns:68px minmax(0,1fr);gap:9px}.app-sidebar{padding:14px 8px;border-radius:15px}.app-sidebar .dashboard-side-brand{padding:2px 4px 18px;justify-content:center}.app-sidebar .dashboard-side-brand>div:last-child,.app-sidebar .dashboard-side-label,.app-sidebar .dashboard-profile{display:none}.app-sidebar .dashboard-side-logo{width:38px;height:38px}.app-sidebar button{font-size:0;text-align:center;padding:10px 4px}.app-sidebar button::first-letter{font-size:17px}.form-card{padding:16px}.dashboard-main{padding:18px 12px}.dashboard-welcome h2{font-size:23px}.dashboard-controls{width:100%;flex-wrap:wrap}.dashboard-period{flex:1}.premium-finance-row{grid-template-columns:1fr 1fr}.alert-grid{grid-template-columns:1fr}}
+
+/* ===== OPTION 1: EXECUTIVE LIGHT LUXURY ===== */
+.header{display:none}
+body{background:#eeeae3}
+.container,.container.has-sidebar{width:100%;max-width:none;margin:0;gap:0;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+.container.has-sidebar>.section{padding:24px 26px;background:radial-gradient(circle at 88% 3%,rgba(205,171,107,.12),transparent 25%),#f7f4ee}
+.app-sidebar{top:0;min-height:100vh;border:0;border-radius:0;box-shadow:8px 0 30px rgba(36,31,25,.09);padding:28px 17px;background:linear-gradient(180deg,#242522 0%,#1d2423 100%)}
+.dashboard-side-brand{padding:0 8px 30px}.dashboard-side-logo{width:42px;height:42px;border-radius:11px;font-family:"Playfair Display",Georgia,serif;font-size:14px;letter-spacing:.03em;color:#fff7e6}.dashboard-side-brand strong{font-size:13px;letter-spacing:.055em}.dashboard-side-brand span{font-size:8px;letter-spacing:.16em;margin-top:3px}
+.dashboard-side-label{font-size:9px;letter-spacing:.2em;color:#9a958c;padding:0 10px 10px}.dashboard-side button{padding:11px 12px;margin-bottom:5px;font-size:12px;font-weight:600;color:#cac7bf}.dashboard-side button:hover,.dashboard-side button.active{background:linear-gradient(90deg,rgba(194,154,82,.22),rgba(194,154,82,.08));color:#fff8ea;border-color:rgba(214,180,116,.35);box-shadow:inset 3px 0 #caa35e}
+.dashboard-profile strong{color:#d8c39c;font-size:11px}
+.dashboard-premium{border:0;border-radius:0;background:transparent;box-shadow:none;min-height:auto}.dashboard-premium-shell{min-height:auto}.dashboard-main{padding:0;background:transparent}
+.dashboard-topbar{background:rgba(255,254,250,.82);border:1px solid #e7dfd3;border-radius:17px;padding:18px 20px;margin-bottom:17px;align-items:center;box-shadow:0 8px 24px rgba(54,45,33,.045);backdrop-filter:blur(10px)}
+.dashboard-eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:#a17a39;font-weight:700;margin-bottom:4px}.dashboard-welcome h2{font-size:28px;line-height:1.1}.dashboard-welcome p{font-size:11px;margin-top:5px}
+.dashboard-controls{align-items:center}.dashboard-controls #serverStatus{background:#edf5ef;color:#2c684c;border:1px solid #cfe3d6;padding:8px 11px;font-size:10px;order:-1}.dashboard-controls #serverStatus.badge-overdue{background:#f7e9e6;color:#923e37;border-color:#eccfca}
+.premium-kpis{gap:14px;margin-bottom:16px}.premium-kpi{padding:17px 18px;border-radius:15px;background:#fffefa;box-shadow:0 8px 22px rgba(57,47,34,.055)}.premium-kpi-icon{width:35px;height:35px;border-radius:10px}.premium-kpi-label{font-size:9px;letter-spacing:.12em}.premium-kpi-value{font-size:23px}.premium-kpi-meta{margin-top:6px}
+.premium-panel{border-radius:15px;padding:18px}.premium-panel-head h3{font-size:12px}.premium-grid{gap:15px;margin-bottom:15px}.premium-bottom,.premium-alerts{gap:15px}.finance-mini{border-radius:13px;padding:13px 15px}
+.container.has-sidebar>.section:not(#dashboard)>.form-card:first-child{border-top:3px solid #b88b43}.footer{grid-column:2;padding:0 26px 20px;background:#f7f4ee;margin:0;text-align:right;font-size:10px;letter-spacing:.08em}
+@media(max-width:1100px){.container,.container.has-sidebar{grid-template-columns:202px minmax(0,1fr)}.container.has-sidebar>.section{padding:18px}.app-sidebar{display:flex!important}.dashboard-topbar{align-items:flex-start}}
+@media(max-width:700px){.container,.container.has-sidebar{grid-template-columns:68px minmax(0,1fr)}.container.has-sidebar>.section{padding:10px 9px}.app-sidebar{padding:14px 8px}.dashboard-topbar{padding:15px}.dashboard-controls #serverStatus{width:auto}.dashboard-welcome h2{font-size:22px}.footer{grid-column:2;padding:0 10px 14px}}
+
+/* Pixel-close structure from the selected Option 1 reference. */
+.dashboard-utility{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fffefa;border:1px solid #e7e1d7;border-radius:14px;padding:10px 13px;margin-bottom:14px;box-shadow:0 6px 18px rgba(52,44,33,.04);position:relative;z-index:250}
+.dashboard-search{width:min(420px,46%);position:relative}.dashboard-search>span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8c8479;font-size:14px;z-index:2;pointer-events:none}.dashboard-search input{height:38px;padding:8px 12px 8px 36px;border:1px solid transparent;background:#f2f1ee;border-radius:9px;font-size:11px;box-shadow:none}.dashboard-search input:focus{border-color:#dfcfb4;box-shadow:0 0 0 3px rgba(174,135,70,.1);background:#fff}
+.search-results{display:none;position:absolute;left:0;right:0;top:calc(100% + 8px);background:#fffefa;border:1px solid #ded4c5;border-radius:13px;padding:7px;z-index:500;box-shadow:0 20px 50px rgba(47,39,28,.2);max-height:320px;overflow:auto}.search-results.show{display:block}.search-result{width:100%;min-height:52px;display:flex;align-items:center;gap:12px;border:0;background:transparent;padding:9px 10px;border-radius:9px;text-align:left;color:#38342e}.search-result:hover,.search-result.selected{background:#f3eadb;color:#6e4e20}.search-result-icon{position:static!important;transform:none!important;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:#f1e5d1;color:#8b652b;font-size:13px;flex:0 0 32px}.search-result-copy{position:static!important;transform:none!important;display:block;min-width:0;line-height:1.25}.search-result-copy strong{display:block;font-size:12px;color:#38342e;line-height:1.25}.search-result-copy small{display:block;font-size:10px;color:#8b8378;margin-top:4px;line-height:1.3}.search-empty{padding:16px;text-align:center;color:#877e72;font-size:11px}.search-hint{padding:6px 10px 7px;color:#a09689;font-size:8px;text-transform:uppercase;letter-spacing:.13em;border-bottom:1px solid #eee7dc;margin-bottom:3px}
+.dashboard-utility-right{display:flex;align-items:center;gap:10px}.utility-date{font-size:10px;color:#6f685f;white-space:nowrap}.utility-bell{width:34px;height:34px;border:0;background:transparent;color:#514b44;font-size:15px}.utility-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#8d6c38;color:#fff9ed;font-size:10px;font-weight:800;border:2px solid #eadbc0}
+.dashboard-topbar{min-height:112px;background:linear-gradient(106deg,#fffefa 0%,#fffefa 70%,#f5ead7 100%);position:relative;overflow:hidden;padding:20px 22px}.dashboard-topbar::after{content:"";position:absolute;right:-30px;top:-55px;width:190px;height:190px;border:1px solid rgba(174,134,67,.14);border-radius:50%}.dashboard-welcome{position:relative;z-index:1}.dashboard-eyebrow{color:#9b7a43}.dashboard-promise{position:relative;z-index:1;align-self:stretch;min-width:190px;display:flex;align-items:center;padding:0 20px;border-left:1px solid #dec9a5;color:#684f29;font-family:"Playfair Display",Georgia,serif;font-size:15px;line-height:1.25}.dashboard-controls{display:none}
+.premium-kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.premium-kpi{min-height:132px}.premium-kpi-icon{margin-top:12px;margin-bottom:0;background:transparent!important;font-size:22px}.premium-kpi::before{content:"";position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#b78b43,#ead8b6)}
+.premium-kpi-meta{color:#47785e}.premium-grid{grid-template-columns:1.55fr .85fr}.sales-chart{height:225px}.inventory-donut{width:132px;height:132px}.inventory-donut::after{inset:24px}.premium-bottom{grid-template-columns:1.35fr .75fr}.premium-alerts{display:none}
+@media(max-width:900px){.dashboard-search{width:48%}.dashboard-promise{display:none}.premium-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.dashboard-utility{align-items:flex-start}.dashboard-search{width:100%}.utility-date,.utility-bell{display:none}.dashboard-topbar{min-height:100px}.premium-kpis{grid-template-columns:1fr}.premium-grid,.premium-bottom{grid-template-columns:1fr}}
+
+/* ===== DAGENTICX-INSPIRED AHMAD MOTORS PALETTE ===== */
+:root{--primary:#002d29;--primary-2:#073b36;--accent:#dfb878;--accent-2:#bf914c;--muted:#6e7974;--bg:#efede5;--card:#fffdf8;--border:#ccd5cf;--gold-soft:#f4e7cf;--shadow:0 12px 34px rgba(0,43,39,.075)}
+body,button,input,select,textarea{font-family:"Manrope",Arial,sans-serif}body{background:#efede5;color:#103c38}
+h1,h2,.brand h1,.dashboard-welcome h2,.form-card h2,.dashboard-promise{font-family:"Cormorant Garamond",Georgia,serif}
+.dashboard-side-label,.dashboard-eyebrow,.premium-kpi-label,.finance-mini span,.report-kpi span,.reminder-card span,.footer,.search-hint{font-family:"IBM Plex Mono",monospace}
+.app-sidebar{background:linear-gradient(180deg,#002f2b 0%,#001f1c 100%);box-shadow:8px 0 30px rgba(0,34,31,.15)}
+.dashboard-side-logo{background:linear-gradient(145deg,#14756c,#075047);border:1px solid rgba(223,184,120,.28);color:#efc887;box-shadow:0 8px 20px rgba(0,20,18,.25);font-family:"Manrope",sans-serif}
+.dashboard-side-brand strong{color:#f5f1e8}.dashboard-side-brand span,.dashboard-side-label{color:#839b94}.dashboard-side button{color:#b8c8c3}.dashboard-side button:hover,.dashboard-side button.active{background:linear-gradient(90deg,rgba(223,184,120,.2),rgba(223,184,120,.055));color:#fff8ec;border-color:rgba(223,184,120,.34);box-shadow:inset 3px 0 #dfb878}.dashboard-profile{border-color:#31524d}.dashboard-profile small{color:#7f9891}.dashboard-profile strong{color:#dfb878}
+.container.has-sidebar>.section,.footer{background:radial-gradient(circle at 90% 0,rgba(0,82,74,.055),transparent 26%),#efede5}
+.dashboard-utility,.dashboard-topbar,.premium-kpi,.premium-panel,.finance-mini,.form-card,.table-wrap,.report-kpi,.reminder-card,.modal-box{background:#fffdf8;border-color:#ccd5cf}
+.dashboard-utility{box-shadow:0 7px 22px rgba(0,54,49,.055)}.dashboard-search input{background:#f0f2ed;color:#153f3b}.dashboard-search input:focus{background:#fff;border-color:#9fb9af;box-shadow:0 0 0 3px rgba(0,75,68,.09)}
+.search-results{background:#fffdf8;border-color:#bdcbc5;box-shadow:0 20px 50px rgba(0,42,38,.16)}.search-result:hover,.search-result.selected{background:#e8f0eb;color:#004f48}.search-result-icon{background:#e1eee9;color:#00675d}.search-result-copy strong{color:#123f3a}.search-result-copy small{color:#6f7d78}.search-hint{color:#8b7552;border-color:#e7e2d7}
+.utility-date,.utility-bell{color:#526a64}.utility-avatar{background:#00675d;color:#f8e4bd;border-color:#dfb878}.dashboard-controls #serverStatus{background:#e5f1eb;color:#19604f;border-color:#bdd8ca}.dashboard-controls #serverStatus.badge-overdue{background:#f6e9e5;color:#923e37;border-color:#eccfca}
+.dashboard-topbar{background:linear-gradient(108deg,#fffdf8 0%,#fffdf8 69%,#f1e3c9 100%);box-shadow:0 8px 24px rgba(0,54,49,.05)}.dashboard-topbar::after{border-color:rgba(0,83,75,.13)}.dashboard-eyebrow{color:#9e6f2e}.dashboard-welcome h2{font-size:31px;color:#003f39}.dashboard-welcome p{color:#677872}.dashboard-promise{color:#9b6426;border-color:#dab67b;font-size:17px;font-style:italic}
+.premium-kpi,.premium-panel,.finance-mini{box-shadow:0 8px 24px rgba(0,50,45,.055)}.premium-kpi::before{background:linear-gradient(90deg,#00675d,#dfb878)}.premium-kpi::after{background:rgba(0,103,93,.055)}.premium-kpi-label{color:#657b74}.premium-kpi-value{color:#003f39}.premium-kpi-meta{color:#35725f}.premium-kpi-icon{color:#bb7f31!important}
+.premium-panel-head h3{color:#073f3a}.premium-panel-head span,.legend-row{color:#70817b}.sales-bar.sales{background:linear-gradient(180deg,#dfb878,#b57d32)}.sales-bar.collection{background:linear-gradient(180deg,#17776d,#004e47)}.legend-blue{background:#c69348}.legend-purple{background:#00675d}.sales-chart{background:linear-gradient(to top,rgba(0,73,66,.09) 1px,transparent 1px) 0 100%/100% 25%}.sales-axis{color:#76877f}
+.inventory-donut{background:conic-gradient(#00675d 0 38%,#dfb878 38% 66%,#b8863e 66% 82%,#4d8873 82% 94%,#d4d9d2 94% 100%)}.inventory-donut::after{background:#fffdf8;border-color:#cbd5cf}.inventory-donut-center,.inv-value{color:#073f3a}.inventory-donut-center span,.inv-row{color:#6d7d77}
+.premium-table th,.premium-table td,th,td{border-color:#dfe4df}.premium-table th,th{color:#687b74;background:#eef1ec}.premium-table td,.premium-table td strong{color:#19433e}tbody tr:hover{background:#f0f4ef}
+.form-card h2,.form-card h3{color:#003f39}label{color:#365b55}input,select,textarea{border-color:#c6d1cb;background:#fff;color:#123f3a}input:hover,select:hover,textarea:hover{border-color:#8eaaa1}input:focus,select:focus,textarea:focus{border-color:#00675d;box-shadow:0 0 0 4px rgba(0,103,93,.1)}
+.btn-primary{background:#00675d;border-color:#00675d;color:#fff}.btn-primary:hover{background:#004f48}.btn-secondary{background:#f3f1e9;color:#16423d;border-color:#cbd5cf}.btn-success{background:#24765d}.btn-warning{background:#dfb878;color:#173a36}
+.summary-box,.notice{background:#f5ead7;border-color:#dec394;color:#765323}.summary-item{background:#fffdf8;border-color:#ddddd4}.report-hero{background:linear-gradient(135deg,#003a35,#001f1c);border-color:#28534e;color:#f7f2e8}.mini-link{color:#9b6426}.activity-icon{background:#e4efea}.activity-item strong{color:#16423d}.activity-item span{color:#70817b}.premium-quick button{border-color:#bfcfc8;background:#f2f4ef;color:#24534c}.premium-quick button:hover{border-color:#00675d;color:#004d46;background:#e7f0eb}
+</style>
 </head>
 <body>
 <header class="header">
   <div class="header-inner">
     <div class="brand">
-      <h1>🏍️ Motorcycle Showroom</h1>
-      <p>Complete Showroom Management System</p>
+      <div class="header-monogram">AM</div>
+      <div class="brand-copy">
+        <h1>AHMAD <span>MOTORS</span></h1>
+        <p>Motorcycle Sales &amp; Management</p>
+      </div>
     </div>
     <div id="serverStatus" class="badge badge-stock">System Ready</div>
   </div>
@@ -230,22 +365,22 @@ table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:11px 12p
       <div class="dashboard-premium-shell">
         <aside class="dashboard-side">
           <div class="dashboard-side-brand">
-            <div class="dashboard-side-logo">🏍</div>
-            <div><strong>SHOWROOM</strong><span>MANAGEMENT</span></div>
+            <div class="dashboard-side-logo">AM</div>
+            <div><strong>AHMAD MOTORS</strong><span>MANAGEMENT</span></div>
           </div>
           <div class="dashboard-side-label">Overview</div>
-          <button class="active" onclick="openSection('dashboard')">◈ Dashboard</button>
-          <button onclick="openSection('customers')">♙ Customers</button>
-          <button onclick="openSection('motorcycles')">🏍 Inventory</button>
-          <button onclick="openSection('sales')">↗ Sales</button>
-          <button onclick="openSection('installments')">◷ Installments</button>
+          <button class="active" data-section="dashboard" onclick="openSection('dashboard')">◈ Dashboard</button>
+          <button data-section="customers" onclick="openSection('customers')">♙ Customers</button>
+          <button data-section="motorcycles" onclick="openSection('motorcycles')">🏍 Inventory</button>
+          <button data-section="sales" onclick="openSection('sales')">↗ Sales</button>
+          <button data-section="installments" onclick="openSection('installments')">◷ Installments</button>
           <div class="dashboard-side-label" style="margin-top:14px">Finance</div>
-          <button onclick="openSection('payments')">▣ Payments</button>
-          <button onclick="openSection('expenses')">▤ Expenses</button>
-          <button onclick="openSection('suppliers')">⌂ Suppliers</button>
-          <button onclick="openSection('purchases')">🛒 Purchases</button>
-          <button onclick="openSection('reports')">▦ Reports</button>
-          <button onclick="openSection('reminders')">🔔 Reminders</button>
+          <button data-section="payments" onclick="openSection('payments')">▣ Payments</button>
+          <button data-section="expenses" onclick="openSection('expenses')">▤ Expenses</button>
+          <button data-section="suppliers" onclick="openSection('suppliers')">⌂ Suppliers</button>
+          <button data-section="purchases" onclick="openSection('purchases')">🛒 Purchases</button>
+          <button data-section="reports" onclick="openSection('reports')">▦ Reports</button>
+          <button data-section="reminders" onclick="openSection('reminders')">🔔 Reminders</button>
           <div class="dashboard-side-spacer"></div>
           <div class="dashboard-profile">
             <small>STATUS</small>
@@ -254,10 +389,19 @@ table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:11px 12p
         </aside>
 
         <main class="dashboard-main">
+          <div class="dashboard-utility">
+            <div class="dashboard-search"><span>⌕</span><input id="dashboardQuickSearch" placeholder="Search customers, sales, reports..." aria-label="Search dashboard" autocomplete="off"><div id="dashboardSearchResults" class="search-results" role="listbox"></div></div>
+            <div class="dashboard-utility-right">
+              <span class="utility-date" id="utilityDate">Today</span>
+              <button class="utility-bell" onclick="openSection('reminders')" title="Open reminders">♧</button>
+              <div class="utility-avatar" title="Ahmad Motors Admin">AM</div>
+            </div>
+          </div>
           <div class="dashboard-topbar">
             <div class="dashboard-welcome">
-              <h2>Welcome back, Showroom Admin 👋</h2>
-              <p>Here’s what’s happening in your showroom today.</p>
+              <div class="dashboard-eyebrow">Executive overview</div>
+              <h2>Welcome to Ahmad Motors</h2>
+              <p>Your showroom performance and operations at a glance.</p>
             </div>
             <div class="dashboard-controls">
               <select id="dashboardPeriod" class="dashboard-period" title="Dashboard period">
@@ -270,6 +414,7 @@ table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:11px 12p
               <div class="dashboard-date" id="dashboardDate">Today</div>
               <button class="dashboard-refresh" onclick="refreshAllData()" title="Refresh all data">↻</button>
             </div>
+            <div class="dashboard-promise">Great vehicles.<br>Better journeys.</div>
           </div>
 
           <div class="premium-kpis">
@@ -824,7 +969,7 @@ table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:11px 12p
     </div>
   </section>
 
-  <div class="footer">Motorcycle Showroom Management • Local Node.js + MySQL</div>
+  <div class="footer">AHMAD MOTORS • Showroom Management System</div>
 </div>
 
 <!-- SALE DETAILS MODAL -->
@@ -904,12 +1049,15 @@ async function api(url,options={}){
 function openSection(id){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.app-sidebar button[data-section]').forEach(b=>b.classList.remove('active'));
 
   const section=document.getElementById(id);
   if(section) section.classList.add('active');
 
   const btn=document.querySelector(`#mainNav button[data-section="${id}"]`);
   if(btn) btn.classList.add('active');
+  const sideBtn=document.querySelector(`.app-sidebar button[data-section="${id}"]`);
+  if(sideBtn) sideBtn.classList.add('active');
 
   if(id==='dashboard') loadDashboard();
   if(id==='customers') loadCustomers();
@@ -949,6 +1097,71 @@ function openSection(id){
 document.querySelectorAll('#mainNav button').forEach(btn=>{
   btn.addEventListener('click',()=>openSection(btn.dataset.section));
 });
+
+// Keep one persistent sidebar for every application section.
+const appContainer=document.querySelector('.container');
+const dashboardSidebar=document.querySelector('#dashboard .dashboard-side');
+if(appContainer && dashboardSidebar){
+  dashboardSidebar.classList.add('app-sidebar');
+  appContainer.insertBefore(dashboardSidebar,appContainer.querySelector('.section'));
+  appContainer.classList.add('has-sidebar');
+}
+
+// Place live connection status in the executive dashboard header.
+const liveStatus=document.getElementById('serverStatus');
+const dashboardControls=document.querySelector('.dashboard-utility-right');
+if(liveStatus && dashboardControls) dashboardControls.prepend(liveStatus);
+const utilityDate=document.getElementById('utilityDate');
+if(utilityDate) utilityDate.textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+
+// Functional global feature search (works even before the API connects).
+const quickSearchItems=[
+  {section:'dashboard',icon:'◈',title:'Dashboard',description:'Overview and performance',keywords:'home overview kpi analytics'},
+  {section:'customers',icon:'♙',title:'Customers',description:'Add or find a customer',keywords:'customer client buyer people cnic phone'},
+  {section:'motorcycles',icon:'🏍',title:'Inventory',description:'Motorcycles and stock',keywords:'motorcycle bike vehicle stock engine chassis'},
+  {section:'sales',icon:'↗',title:'Sales',description:'Create sale or view history',keywords:'sale sell cash deal invoice'},
+  {section:'installments',icon:'◷',title:'Installments',description:'Schedules and outstanding dues',keywords:'installment due monthly balance overdue'},
+  {section:'payments',icon:'▣',title:'Payments',description:'Record and review payments',keywords:'payment paid receipt collection money'},
+  {section:'expenses',icon:'▤',title:'Expenses',description:'Manage showroom expenses',keywords:'expense cost spending bill'},
+  {section:'suppliers',icon:'⌂',title:'Suppliers',description:'Supplier directory',keywords:'supplier vendor company contact'},
+  {section:'purchases',icon:'🛒',title:'Purchases',description:'Purchase records and stock intake',keywords:'purchase buy procurement stock intake'},
+  {section:'reports',icon:'▦',title:'Reports',description:'Business and financial reports',keywords:'report analytics print summary profit'},
+  {section:'reminders',icon:'🔔',title:'Reminders',description:'Due dates and alerts',keywords:'reminder notification alert overdue'}
+];
+const quickInput=document.getElementById('dashboardQuickSearch');
+const quickResults=document.getElementById('dashboardSearchResults');
+let quickSelected=0;
+
+function renderQuickSearch(){
+  if(!quickInput || !quickResults) return;
+  const q=quickInput.value.trim().toLowerCase();
+  const matches=quickSearchItems.filter(item=>(item.title+' '+item.description+' '+item.keywords).toLowerCase().includes(q)).slice(0,7);
+  quickResults.replaceChildren();
+  const hint=document.createElement('div');hint.className='search-hint';hint.textContent=q?'Matching features':'Quick navigation';quickResults.appendChild(hint);
+  if(!matches.length){const empty=document.createElement('div');empty.className='search-empty';empty.textContent='No matching feature found';quickResults.appendChild(empty);quickResults.classList.add('show');return;}
+  quickSelected=Math.min(quickSelected,matches.length-1);
+  matches.forEach((item,index)=>{
+    const button=document.createElement('button');button.type='button';button.className='search-result'+(index===quickSelected?' selected':'');button.setAttribute('role','option');
+    const icon=document.createElement('span');icon.className='search-result-icon';icon.textContent=item.icon;
+    const copy=document.createElement('span');copy.className='search-result-copy';
+    const title=document.createElement('strong');title.textContent=item.title;const desc=document.createElement('small');desc.textContent=item.description;
+    copy.append(title,desc);button.append(icon,copy);button.addEventListener('mousedown',e=>e.preventDefault());button.addEventListener('click',()=>selectQuickItem(item));quickResults.appendChild(button);
+  });
+  quickResults.classList.add('show');
+}
+function selectQuickItem(item){openSection(item.section);quickInput.value='';quickResults.classList.remove('show');}
+if(quickInput && quickResults){
+  quickInput.addEventListener('focus',()=>{quickSelected=0;renderQuickSearch();});
+  quickInput.addEventListener('input',()=>{quickSelected=0;renderQuickSearch();});
+  quickInput.addEventListener('keydown',event=>{
+    const buttons=[...quickResults.querySelectorAll('.search-result')];
+    if(event.key==='ArrowDown'&&buttons.length){event.preventDefault();quickSelected=(quickSelected+1)%buttons.length;renderQuickSearch();}
+    if(event.key==='ArrowUp'&&buttons.length){event.preventDefault();quickSelected=(quickSelected-1+buttons.length)%buttons.length;renderQuickSearch();}
+    if(event.key==='Enter'&&buttons.length){event.preventDefault();buttons[quickSelected]?.click();}
+    if(event.key==='Escape') quickResults.classList.remove('show');
+  });
+  quickInput.addEventListener('blur',()=>setTimeout(()=>quickResults.classList.remove('show'),120));
+}
 
 async function loadDashboard(){
   try{
@@ -2764,11 +2977,11 @@ function printCurrentReport(){
   if(!box){return;}
   const win=window.open('','_blank');
   if(!win){alert('Please allow popups for printing.');return;}
-  win.document.write(`<!doctype html><html><head><title>Motorcycle Showroom Report</title>
+  win.document.write(`<!doctype html><html><head><title>Ahmad Motors Report</title>
     <style>body{font-family:Arial;padding:24px;color:#111}h1{margin-bottom:4px}p{color:#555}
     table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px}
     th{background:#f4f4f4}</style></head><body>
-    <h1>Motorcycle Showroom Report</h1>
+    <h1>AHMAD MOTORS — Showroom Report</h1>
     <p>Generated: ${new Date().toLocaleString()}</p>
     ${box.innerHTML}
     </body></html>`);
