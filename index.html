@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahmad Motors Management</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-canvas: #F8FAF9;
+      --bg-card: #FFFFFF;
+      --sidebar-bg: #032B25;
+      --sidebar-hover: #074037;
+      --text-main: #1C2826;
+      --text-muted: #6E7C79;
+      --border-color: #E2E8E6;
+      --primary-green: #032B25;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg-canvas); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; display: flex; min-height: 100vh; }
+
+    /* SIDEBAR NAVIGATION */
+    aside { width: 240px; background: var(--sidebar-bg); color: #FFF; padding: 24px 16px; display: flex; flex-direction: column; flex-shrink: 0; }
+    .brand-container { font-size: 1.1rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 28px; padding-left: 8px; color: #FFF; }
+
+    .nav-section-label { font-size: 0.65rem; text-transform: uppercase; color: #527A72; font-weight: 700; margin: 16px 0 6px 12px; letter-spacing: 1px; }
+    .nav-item { display: flex; align-items: center; padding: 10px 14px; color: #A3C2BB; border-radius: 8px; font-size: 0.875rem; font-weight: 600; margin-bottom: 2px; cursor: pointer; transition: all 0.2s ease; }
+    .nav-item:hover { background: var(--sidebar-hover); color: #FFFFFF; }
+    .nav-item.active { background: var(--sidebar-hover); color: #FFFFFF; }
+
+    /* MAIN CONTENT AREA */
+    main { flex: 1; padding: 24px 32px; overflow-y: auto; position: relative; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .search-bar { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; width: 400px; font-size: 0.85rem; outline: none; font-family: inherit; color: var(--text-main); }
+    .search-bar::placeholder { color: #A0AEC0; }
+
+    .view-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+    .view-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; }
+    
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* CARD & GRID STYLES */
+    .dashboard-card { background: var(--bg-card); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 24px; }
+    
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+    .metric-card { background: var(--bg-card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }
+    .metric-title { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .metric-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    .metric-subtitle { font-size: 0.75rem; color: var(--text-muted); }
+
+    .dashboard-grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 24px; }
+
+    /* GRAPH PLACEHOLDER */
+    .graph-container { background: #F8FAF9; border-radius: 8px; border: 1px dashed #D0D9D6; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.85rem; gap: 8px; }
+    .graph-icon { font-size: 1.8rem; opacity: 0.4; }
+
+    .customer-motorcycle-form{grid-column:1/-1;margin-top:6px;padding:18px;border:1px solid #dbe5e1;border-radius:12px;background:linear-gradient(145deg,#fbfdfc,#f3f8f6);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+    .customer-motorcycle-form-title{font-size:.82rem;font-weight:900;color:#032b25;text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #dbe5e1}
+    /* PREMIUM SALES & COLLECTIONS + INVENTORY STATUS — requested sections only */
+    .sales-collection-overview{width:100%;height:100%;min-height:260px;padding:14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;background:linear-gradient(145deg,#071b18 0%,#032b25 52%,#061713 100%);border:1px solid rgba(62,224,190,.22);border-radius:12px;overflow:auto}
+    .sales-collection-card{position:relative;min-width:0;padding:13px 13px 10px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018));box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 8px 24px rgba(0,0,0,.18);overflow:hidden}
+    .sales-collection-card::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--ecg-color,#38e0bd);box-shadow:0 0 14px var(--ecg-color,#38e0bd)}
+    .sales-collection-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .sales-collection-label{color:#8ba8a2;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+    .sales-collection-percent{color:var(--ecg-color,#38e0bd);font-size:.65rem;font-weight:800}
+    .sales-collection-value{margin-top:5px;color:#f4fbf8;font-size:1.15rem;line-height:1.2;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sales-collection-sub{margin-top:3px;color:#66827b;font-size:.61rem}
+    .ecg-wrap{height:62px;margin-top:7px;position:relative;overflow:hidden;border-radius:8px;background:linear-gradient(to bottom,rgba(255,255,255,.025),transparent)}
+    .ecg-wrap::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(255,255,255,.055)}
+    .ecg-grid{position:absolute;inset:0;opacity:.35;background:linear-gradient(to right,rgba(255,255,255,.035) 1px,transparent 1px) 0 0/24px 100%}
+    .ecg-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+    .ecg-glow{fill:none;stroke:var(--ecg-color,#38e0bd);stroke-width:5;opacity:.22;filter:blur(4px)}
+    .ecg-line{fill:none;stroke:var(--ecg-color,#38e0bd);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px var(--ecg-color,#38e0bd));stroke-dasharray:520;stroke-dashoffset:520;animation:ecgDraw 2.8s ease-out forwards,ecgPulse 2.8s linear 2.8s infinite}
+    .ecg-dot{fill:var(--ecg-color,#38e0bd);filter:drop-shadow(0 0 6px var(--ecg-color,#38e0bd));animation:ecgDot 1.2s ease-in-out infinite}
+    @keyframes ecgDraw{to{stroke-dashoffset:0}} @keyframes ecgPulse{0%,100%{opacity:1}50%{opacity:.62}} @keyframes ecgDot{0%,100%{opacity:.45;transform:scale(.8);transform-origin:center}50%{opacity:1;transform:scale(1.15);transform-origin:center}}
+    .sales-collection-footer{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:7px;color:#58756e;font-size:.58rem;padding-top:1px}
+    .sales-collection-live{width:6px;height:6px;border-radius:50%;background:#38e0bd;box-shadow:0 0 9px #38e0bd;animation:liveBlink 1.2s ease-in-out infinite}
+    @keyframes liveBlink{0%,100%{opacity:.45}50%{opacity:1}}
+    .customer-motorcycle-details{display:none;margin-top:12px;padding:14px;border:1px solid #d7e2de;border-radius:12px;background:linear-gradient(145deg,#f8fbfa,#eef6f3);box-shadow:inset 0 1px 0 rgba(255,255,255,.8)}
+    .customer-motorcycle-details.active{display:block}
+    .customer-motorcycle-details-title{font-size:.72rem;font-weight:800;color:#032b25;text-transform:uppercase;letter-spacing:.65px;margin-bottom:10px}
+    .customer-motorcycle-details-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+    .customer-motorcycle-detail{padding:9px 10px;border:1px solid #dce7e3;border-radius:9px;background:#fff;min-width:0}
+    .customer-motorcycle-detail b{display:block;font-size:.58rem;color:#7a8985;text-transform:uppercase;letter-spacing:.4px}
+    .customer-motorcycle-detail span{display:block;margin-top:3px;font-size:.73rem;color:#263633;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media(max-width:800px){.customer-motorcycle-details-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:520px){.customer-motorcycle-details-grid{grid-template-columns:1fr}}
+    .inventory-status-premium{display:grid;grid-template-columns:1fr;gap:10px;margin-top:16px}
+    .inventory-status-card{position:relative;display:flex;align-items:center;gap:12px;min-height:54px;padding:10px 12px;border-radius:11px;background:linear-gradient(135deg,var(--status-bg1),var(--status-bg2));border:1px solid var(--status-border);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 7px 18px rgba(0,0,0,.07);overflow:hidden;transition:transform .2s ease,box-shadow .2s ease}
+    .inventory-status-card:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 10px 22px rgba(0,0,0,.10)}
+    .inventory-status-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--status-color);box-shadow:0 0 12px var(--status-color)}
+    .inventory-status-icon{width:34px;height:34px;flex:0 0 34px;display:flex;align-items:center;justify-content:center;border-radius:9px;background:var(--status-icon-bg);color:var(--status-color);font-size:1rem;font-weight:800;box-shadow:inset 0 0 0 1px var(--status-border)}
+    .inventory-status-info{min-width:0;flex:1}.inventory-status-label{font-size:.68rem;font-weight:800;color:#52635f;text-transform:uppercase;letter-spacing:.45px}.inventory-status-caption{font-size:.58rem;color:#84918e;margin-top:2px}
+    .inventory-status-value{color:var(--status-color);font-size:1.15rem;font-weight:800;line-height:1;min-width:32px;text-align:right;text-shadow:0 0 8px var(--status-glow)}
+    .inventory-status-bar{position:absolute;left:50px;right:55px;bottom:7px;height:2px;background:rgba(0,0,0,.055);border-radius:99px;overflow:hidden}.inventory-status-bar span{display:block;height:100%;width:var(--status-width);background:var(--status-color);box-shadow:0 0 7px var(--status-color);border-radius:99px}
+    @media(max-width:700px){.sales-collection-overview{grid-template-columns:1fr;overflow:visible}.sales-collection-footer{grid-column:1}}
+
+    /* INVENTORY LIST */
+    .status-list { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+    .status-item { display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-muted); padding-bottom: 8px; }
+    .status-item strong { color: var(--text-main); font-weight: 700; }
+
+    /* FORM STYLES */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full-width { grid-column: span 2; }
+    .form-group label { font-size: 0.78rem; font-weight: 700; color: #4A5568; }
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.875rem; color: var(--text-main); outline: none; background: #FFF; font-family: inherit;
+    }
+
+    .btn-primary { background: var(--primary-green); color: #FFF; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: opacity 0.2s; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: #EFECE6; color: var(--text-main); border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+  </style>
+</head>
+
+<body>
+<aside>
+  <div class="brand-container">AHMAD MOTORS</div>
+  <div class="nav-section-label">Overview</div>
+  <div class="nav-item active" data-view="dashboardView" onclick="switchView('dashboardView',this)">▦ Dashboard</div>
+  <div class="nav-item" data-view="customersView" onclick="switchView('customersView',this)">♙ Customers</div>
+  <div class="nav-item" data-view="salesView" onclick="switchView('salesView',this)">↗ Sales</div>
+  <div class="nav-item" data-view="installmentsView" onclick="switchView('installmentsView',this)">◷ Installments</div>
+  <div class="nav-section-label">Finance</div>
+  <div class="nav-item" data-view="paymentsView" onclick="switchView('paymentsView',this)">▣ Payments</div>
+  <div class="nav-item" data-view="expensesView" onclick="switchView('expensesView',this)">▤ Expenses</div>
+  <div class="nav-item" data-view="suppliersView" onclick="switchView('suppliersView',this)">⌂ Suppliers</div>
+  <div class="nav-item" data-view="purchasesView" onclick="switchView('purchasesView',this)">🛒 Purchases</div>
+  <div class="nav-item" data-view="reportsView" onclick="switchView('reportsView',this)">▦ Reports</div>
+  <div class="nav-item" data-view="remindersView" onclick="switchView('remindersView',this)">🔔 Reminders</div>
+  <div style="margin-top:auto;border-top:1px solid rgba(255,255,255,.12);padding:18px 12px 4px;font-size:.7rem;color:#8fb1a8">● System Online</div>
+</aside>
+
+<main>
+<header>
+  <input id="globalSearch" type="text" class="search-bar" placeholder="Search customers, motorcycles, sales, invoices..." />
+  <button class="btn-primary" type="button" onclick="openQuickSale()">+ Add New Sale</button>
+</header>
+
+<div id="toast" style="display:none;position:fixed;right:28px;top:24px;z-index:10000;padding:13px 18px;border-radius:9px;background:#032B25;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:.82rem;font-weight:700"></div>
+
+<section id="dashboardView" class="view-section active">
+  <div class="dashboard-card">
+    <h1 class="view-title">Welcome to Ahmad Motors</h1>
+    <p class="view-subtitle">Your showroom performance and operations at a glance.</p>
+    <div class="form-actions" style="margin-top:0"><button class="btn-primary" onclick="refreshAll()">↻ Refresh Data</button></div>
+  </div>
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-title">Total Motorcycles</div><div class="metric-value" id="dashMotorcycles">0</div><div class="metric-subtitle" id="dashMotorcyclesSub">0 in stock • 0 sold</div></div>
+    <div class="metric-card"><div class="metric-title">Total Sales</div><div class="metric-value" id="dashSales">Rs. 0</div><div class="metric-subtitle" id="dashSalesSub">0 sale records</div></div>
+    <div class="metric-card"><div class="metric-title">Purchase Value</div><div class="metric-value" id="dashPurchases">Rs. 0</div><div class="metric-subtitle" id="dashPurchasesSub">0 purchase records</div></div>
+    <div class="metric-card"><div class="metric-title">Estimated Gross Profit</div><div class="metric-value" id="dashProfit">Rs. 0</div><div class="metric-subtitle">Sales minus purchase cost</div></div>
+  </div>
+  <div class="dashboard-grid">
+    <div class="dashboard-card">
+      <h3 style="font-size:1.1rem;margin-bottom:16px">Sales & Collections Overview</h3>
+      <div class="graph-container" id="dashboardOverview">Loading...</div>
+    </div>
+    <div class="dashboard-card">
+      <h3 style="font-size:1.1rem;margin-bottom:16px">Inventory by Status</h3>
+      <div class="inventory-status-premium">
+        <div class="inventory-status-card" style="--status-color:#16a34a;--status-bg1:#f0fdf4;--status-bg2:#dcfce7;--status-border:#bbf7d0;--status-icon-bg:#dcfce7;--status-glow:rgba(22,163,74,.35);--status-width:100%"><div class="inventory-status-icon">✓</div><div class="inventory-status-info"><div class="inventory-status-label">In Stock</div><div class="inventory-status-caption">Available motorcycles</div></div><strong class="inventory-status-value" id="dashStock">0</strong><div class="inventory-status-bar"><span></span></div></div>
+        <div class="inventory-status-card" style="--status-color:#dc2626;--status-bg1:#fff5f5;--status-bg2:#fee2e2;--status-border:#fecaca;--status-icon-bg:#fee2e2;--status-glow:rgba(220,38,38,.35);--status-width:82%"><div class="inventory-status-icon">✓</div><div class="inventory-status-info"><div class="inventory-status-label">Sold</div><div class="inventory-status-caption">Completed motorcycle sales</div></div><strong class="inventory-status-value" id="dashSold">0</strong><div class="inventory-status-bar"><span></span></div></div>
+        <div class="inventory-status-card" style="--status-color:#7c3aed;--status-bg1:#faf5ff;--status-bg2:#ede9fe;--status-border:#ddd6fe;--status-icon-bg:#ede9fe;--status-glow:rgba(124,58,237,.35);--status-width:65%"><div class="inventory-status-icon">◆</div><div class="inventory-status-info"><div class="inventory-status-label">Reserved</div><div class="inventory-status-caption">Held for customers</div></div><strong class="inventory-status-value" id="dashReserved">0</strong><div class="inventory-status-bar"><span></span></div></div>
+        <div class="inventory-status-card" style="--status-color:#d97706;--status-bg1:#fffbeb;--status-bg2:#fef3c7;--status-border:#fde68a;--status-icon-bg:#fef3c7;--status-glow:rgba(217,119,6,.35);--status-width:52%"><div class="inventory-status-icon">◷</div><div class="inventory-status-info"><div class="inventory-status-label">Pending Due</div><div class="inventory-status-caption">Payments due today</div></div><strong class="inventory-status-value" id="dashDue">0</strong><div class="inventory-status-bar"><span></span></div></div>
+        <div class="inventory-status-card" style="--status-color:#ea580c;--status-bg1:#fff7ed;--status-bg2:#ffedd5;--status-border:#fed7aa;--status-icon-bg:#ffedd5;--status-glow:rgba(234,88,12,.35);--status-width:72%"><div class="inventory-status-icon">!</div><div class="inventory-status-info"><div class="inventory-status-label">Overdue</div><div class="inventory-status-caption">Payments needing attention</div></div><strong class="inventory-status-value" id="dashOverdue">0</strong><div class="inventory-status-bar"><span></span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="customersView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">+ Add New Customer</h1>
+    <p class="view-subtitle">Save customer information directly to the showroom database.</p>
+    <form id="customerForm">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Customer Name *</label><input id="customer_name" required></div>
+        <div class="form-group"><label>Father Name</label><input id="father_name"></div>
+        <div class="form-group"><label>CNIC</label><input id="cnic" placeholder="XXXXX-XXXXXXX-X"></div>
+        <div class="form-group"><label>Phone *</label><input id="phone" required placeholder="03XXXXXXXXX"></div>
+        <div class="form-group"><label>Alternate Phone</label><input id="alternate_phone"></div>
+        <div class="form-group"><label>City</label><input id="city"></div>
+        <div class="form-group"><label>Occupation</label><input id="occupation"></div>
+        <div class="form-group"><label>Reference Name</label><input id="reference_name"></div>
+        <div class="form-group"><label>Reference Phone</label><input id="reference_phone"></div>
+        <div class="customer-motorcycle-form full-width">
+          <div class="customer-motorcycle-form-title">🏍️ Motorcycle Information</div>
+          <div class="form-grid">
+            <div class="form-group"><label>Company *</label><input id="customer_m_company" required placeholder="Honda, Suzuki, Yamaha"></div>
+            <div class="form-group"><label>Model *</label><input id="customer_m_model" required placeholder="CD 70, CG 125, YBR 125"></div>
+            <div class="form-group"><label>Model Year</label><input id="customer_m_model_year" type="number" placeholder="2026"></div>
+            <div class="form-group"><label>Color</label><input id="customer_m_color" placeholder="Black, Red, Blue"></div>
+            <div class="form-group"><label>Engine Number</label><input id="customer_m_engine_number"></div>
+            <div class="form-group"><label>Chassis Number</label><input id="customer_m_chassis_number"></div>
+            <div class="form-group"><label>Registration Number</label><input id="customer_m_registration_number"></div>
+            <div class="form-group"><label>Purchase Price</label><input id="customer_m_purchase_price" type="number" min="0" step="0.01"></div>
+            <div class="form-group"><label>Sale Price</label><input id="customer_m_sale_price" type="number" min="0" step="0.01"></div>
+            <div class="form-group"><label>Stock Status</label><select id="customer_m_stock_status"><option value="Sold">Sold</option><option value="Reserved">Reserved</option><option value="In Stock">In Stock</option></select></div>
+            <div class="form-group"><label>Purchase Date</label><input id="customer_m_purchase_date" type="date"></div>
+            <div class="form-group full-width"><label>Motorcycle Notes</label><textarea id="customer_m_notes" rows="3" placeholder="Any motorcycle details..."></textarea></div>
+          </div>
+        </div>
+        <div class="form-group full-width"><label>Address</label><textarea id="address" rows="3"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Customer</button><button type="reset" class="btn-secondary">Clear</button></div>
+    </form>
+    <div id="customerMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px"><h2>Customer List</h2><input id="customerSearch" class="search-bar" style="width:300px" placeholder="Search customer..."></div>
+    <div id="customerTable" style="overflow:auto;margin-top:18px"></div>
+  </div>
+</section>
+
+<section id="inventoryView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">+ Add New Motorcycle</h1>
+    <p class="view-subtitle">Add and manage showroom inventory.</p>
+    <form id="motorcycleForm">
+      <input type="hidden" id="motorcycle_id">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Company *</label><input id="m_company" required placeholder="Honda, Suzuki, Yamaha"></div>
+        <div class="form-group"><label>Model *</label><input id="m_model" required placeholder="CD 70, CG 125"></div>
+        <div class="form-group"><label>Model Year</label><input id="m_model_year" type="number"></div>
+        <div class="form-group"><label>Color</label><input id="m_color"></div>
+        <div class="form-group"><label>Engine Number</label><input id="m_engine_number"></div>
+        <div class="form-group"><label>Chassis Number</label><input id="m_chassis_number"></div>
+        <div class="form-group"><label>Registration Number</label><input id="m_registration_number"></div>
+        <div class="form-group"><label>Purchase Price</label><input id="m_purchase_price" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Sale Price</label><input id="m_sale_price" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Stock Status</label><select id="m_stock_status"><option>In Stock</option><option>Reserved</option><option>Sold</option></select></div>
+        <div class="form-group"><label>Purchase Date</label><input id="m_purchase_date" type="date"></div>
+        <div class="form-group full-width"><label>Notes</label><textarea id="m_notes" rows="3"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Motorcycle</button><button type="button" class="btn-secondary" onclick="resetMotorcycleForm()">Clear</button></div>
+    </form>
+    <div id="motorcycleMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px"><h2>Motorcycle Inventory</h2><input id="motorcycleSearch" class="search-bar" style="width:300px" placeholder="Search inventory..."></div>
+    <div id="motorcycleTable" style="overflow:auto;margin-top:18px"></div>
+  </div>
+</section>
+
+<section id="salesView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">💰 Create New Sale</h1>
+    <p class="view-subtitle">Cash and installment sales with automatic balance calculation.</p>
+    <form id="saleForm">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Customer *</label><select id="sale_customer_id" required></select></div>
+        <div class="form-group"><label>Motorcycle *</label><select id="sale_motorcycle_id" required></select></div>
+        <div class="form-group"><label>Sale Date *</label><input id="sale_date" type="date" required></div>
+        <div class="form-group"><label>Sale Type</label><select id="sale_type"><option>Cash</option><option>Installment</option></select></div>
+        <div class="form-group"><label>Total Sale Price *</label><input id="sale_total_price" type="number" min="1" required></div>
+        <div class="form-group"><label>Advance Payment</label><input id="advance_payment" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Remaining Balance</label><input id="remaining_balance" readonly></div>
+        <div class="form-group" id="installmentCountGroup"><label>Installment Count</label><input id="installment_count" type="number" min="1" value="1"></div>
+        <div class="form-group" id="installmentAmountGroup"><label>Monthly Installment</label><input id="installment_amount" readonly></div>
+        <div class="form-group" id="firstDueGroup"><label>First Due Date</label><input id="first_due_date" type="date"></div>
+        <div class="form-group" id="reminderGroup"><label>Reminder Days</label><input id="reminder_days" type="number" min="0" value="3"></div>
+      </div>
+      <div class="dashboard-card" style="background:#F8FAF9;margin-top:20px;margin-bottom:0">
+        <div class="status-list" style="margin-top:0">
+          <div class="status-item"><span>Total</span><strong id="saleSummaryTotal">Rs. 0</strong></div>
+          <div class="status-item"><span>Advance</span><strong id="saleSummaryAdvance">Rs. 0</strong></div>
+          <div class="status-item"><span>Remaining</span><strong id="saleSummaryRemaining">Rs. 0</strong></div>
+          <div class="status-item"><span>Monthly</span><strong id="saleSummaryMonthly">Rs. 0</strong></div>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Sale</button><button type="reset" class="btn-secondary" onclick="setTimeout(initSaleDefaults,0)">Clear</button></div>
+    </form>
+    <div id="saleMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px"><h2>Sales Records</h2><input id="salesSearch" class="search-bar" style="width:300px" placeholder="Search sales..."></div>
+    <div id="salesTable" style="overflow:auto;margin-top:18px"></div>
+  </div>
+</section>
+
+<section id="installmentsView" class="view-section">
+  <div class="dashboard-card"><h1 class="view-title">📅 Installments Management</h1><p class="view-subtitle">Track due, overdue, pending and paid installments.</p>
+    <div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="metric-card"><div class="metric-title">All Installments</div><div class="metric-value" id="instTotal">0</div></div>
+      <div class="metric-card"><div class="metric-title">Due Today</div><div class="metric-value" id="instDue">0</div></div>
+      <div class="metric-card"><div class="metric-title">Overdue</div><div class="metric-value" id="instOverdue">0</div></div>
+      <div class="metric-card"><div class="metric-title">Outstanding</div><div class="metric-value" id="instBalance">Rs. 0</div></div>
+    </div>
+    <div class="form-group" style="max-width:260px"><label>Filter</label><select id="installmentFilter"><option value="all">All</option><option value="due">Due Today</option><option value="overdue">Overdue</option><option value="pending">Pending / Partial</option><option value="paid">Paid</option></select></div>
+    <div id="installmentTable" style="overflow:auto;margin-top:18px"></div>
+  </div>
+</section>
+
+<section id="paymentsView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">💳 Receive Installment Payment</h1>
+    <p class="view-subtitle">Payment automatically updates installment and sale balance.</p>
+    <form id="paymentForm">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group full-width"><label>Installment *</label><select id="payment_installment_id" required></select></div>
+        <div class="form-group"><label>Amount *</label><input id="payment_amount" type="number" min="1" required></div>
+        <div class="form-group"><label>Payment Date</label><input id="payment_date" type="date"></div>
+        <div class="form-group"><label>Payment Method</label><select id="payment_method"><option>Cash</option><option>Bank Transfer</option><option>JazzCash</option><option>EasyPaisa</option><option>Other</option></select></div>
+        <div class="form-group full-width"><label>Notes</label><textarea id="payment_notes" rows="3"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Payment</button><button type="reset" class="btn-secondary">Clear</button></div>
+    </form>
+    <div id="paymentMessage" class="message"></div>
+  </div>
+</section>
+
+<section id="expensesView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">💸 Add Showroom Expense</h1>
+    <form id="expenseForm">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Expense Title *</label><input id="expense_title" required></div>
+        <div class="form-group"><label>Category *</label><input id="expense_category" required placeholder="Rent, Electricity, Salary..."></div>
+        <div class="form-group"><label>Amount *</label><input id="expense_amount" type="number" min="1" required></div>
+        <div class="form-group"><label>Date *</label><input id="expense_date" type="date" required></div>
+        <div class="form-group"><label>Payment Method</label><select id="expense_payment_method"><option>Cash</option><option>Bank Transfer</option><option>JazzCash</option><option>EasyPaisa</option><option>Other</option></select></div>
+        <div class="form-group full-width"><label>Description</label><textarea id="expense_description" rows="3"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Expense</button><button type="reset" class="btn-secondary">Clear</button></div>
+    </form>
+    <div id="expenseMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Expense Records</h2><input id="expenseSearch" class="search-bar" style="width:300px" placeholder="Search expenses..."></div><div id="expenseTable" style="overflow:auto;margin-top:18px"></div></div>
+</section>
+
+<section id="suppliersView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">🏢 Add New Supplier</h1>
+    <form id="supplierForm">
+      <input type="hidden" id="supplier_id">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Supplier Name *</label><input id="supplier_name" required></div>
+        <div class="form-group"><label>Phone</label><input id="supplier_phone"></div>
+        <div class="form-group"><label>Alternate Phone</label><input id="supplier_alt"></div>
+        <div class="form-group"><label>CNIC</label><input id="supplier_cnic"></div>
+        <div class="form-group"><label>City</label><input id="supplier_city"></div>
+        <div class="form-group"><label>Company Name</label><input id="supplier_company"></div>
+        <div class="form-group full-width"><label>Address</label><textarea id="supplier_address" rows="2"></textarea></div>
+        <div class="form-group full-width"><label>Notes</label><textarea id="supplier_notes" rows="2"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Supplier</button><button type="button" class="btn-secondary" onclick="resetSupplierForm()">Clear</button></div>
+    </form>
+    <div id="supplierMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Supplier List</h2><input id="supplierSearch" class="search-bar" style="width:300px" placeholder="Search suppliers..."></div><div id="supplierTable" style="overflow:auto;margin-top:18px"></div></div>
+</section>
+
+<section id="purchasesView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">🛒 Add New Purchase</h1>
+    <form id="purchaseForm">
+      <input type="hidden" id="purchase_id">
+      <div class="form-grid" style="margin-top:20px">
+        <div class="form-group"><label>Supplier</label><select id="purchase_supplier_id"></select></div>
+        <input type="hidden" id="purchase_motorcycle_id">
+        <div class="form-group"><label>Motorcycle</label><input id="purchase_motorcycle_name" placeholder="Enter motorcycle company / model"></div>
+        <div class="form-group"><label>Purchase Date *</label><input id="purchase_date_entry" type="date" required></div>
+        <div class="form-group"><label>Purchase Price *</label><input id="purchase_price_entry" type="number" min="1" required></div>
+        <div class="form-group"><label>Payment Amount</label><input id="purchase_payment_amount" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Payment Method</label><select id="purchase_payment_method"><option>Cash</option><option>Bank Transfer</option><option>JazzCash</option><option>EasyPaisa</option><option>Other</option></select></div>
+        <div class="form-group"><label>Invoice Number</label><input id="purchase_invoice_number"></div>
+        <div class="form-group full-width"><label>Notes</label><textarea id="purchase_notes" rows="3"></textarea></div>
+      </div>
+      <div class="form-actions"><button class="btn-primary">Save Purchase</button><button type="button" class="btn-secondary" onclick="resetPurchaseForm()">Clear</button></div>
+    </form>
+    <div id="purchaseMessage" class="message"></div>
+  </div>
+  <div class="dashboard-card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Purchase Records</h2><input id="purchaseSearch" class="search-bar" style="width:300px" placeholder="Search purchases..."></div><div id="purchaseTable" style="overflow:auto;margin-top:18px"></div></div>
+</section>
+
+<section id="reportsView" class="view-section">
+  <div class="dashboard-card">
+    <h1 class="view-title">📊 Reports</h1><p class="view-subtitle">Generate live reports from the current database records.</p>
+    <div class="form-grid">
+      <div class="form-group"><label>Report Type</label><select id="reportType"><option value="summary">Summary</option><option value="sales">Sales Report</option><option value="purchases">Purchase Report</option><option value="expenses">Expense Report</option><option value="installments">Installment Report</option></select></div>
+      <div class="form-group"><label>Search Report</label><input id="reportSearch" placeholder="Filter report..."></div>
+    </div>
+    <div class="form-actions"><button class="btn-primary" onclick="generateReport()">Generate Report</button><button class="btn-secondary" onclick="printReport()">Print</button></div>
+    <div id="reportSummary" style="margin-top:20px"></div><div id="reportTable" style="overflow:auto;margin-top:18px"></div>
+  </div>
+</section>
+
+<section id="remindersView" class="view-section">
+  <div class="dashboard-card"><h1 class="view-title">🔔 Reminders</h1><p class="view-subtitle">Customers whose installment payments need attention.</p><div class="form-actions" style="margin-top:0"><button class="btn-primary" onclick="loadReminders()">↻ Refresh</button></div></div>
+  <div class="dashboard-grid">
+    <div class="dashboard-card"><h2>Due / Today</h2><div id="dueReminders" style="margin-top:16px"></div></div>
+    <div class="dashboard-card"><h2>Overdue</h2><div id="overdueReminders" style="margin-top:16px"></div></div>
+  </div>
+</section>
+
+<!-- Universal modal -->
+<div id="appModal" style="display:none;position:fixed;inset:0;background:rgba(3,43,37,.58);z-index:9999;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:14px;width:min(1000px,96vw);max-height:90vh;overflow:auto;box-shadow:0 25px 80px rgba(0,0,0,.3)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #E2E8E6"><h2 id="modalTitle">Details</h2><button class="btn-secondary" onclick="closeModal()">×</button></div>
+    <div id="modalContent" style="padding:22px"></div>
+  </div>
+</div>
+
+<script>
+const state={customers:[],motorcycles:[],sales:[],installments:[],expenses:[],suppliers:[],purchases:[],due:[],overdue:[],reportRows:[]};
+
+function $(id){return document.getElementById(id)}
+function val(id){return $(id)?.value??''}
+function setVal(id,v){if($(id))$(id).value=v??''}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function money(v){return 'Rs. '+Number(v||0).toLocaleString('en-PK',{maximumFractionDigits:2})}
+function dateOnly(v){return v?String(v).slice(0,10):'—'}
+function today(){return new Date().toISOString().slice(0,10)}
+function toast(msg,error=false){const t=$('toast');t.textContent=msg;t.style.background=error?'#9d443b':'#032B25';t.style.display='block';clearTimeout(window._toast);window._toast=setTimeout(()=>t.style.display='none',3500)}
+async function api(url,options={}){
+  const r=await fetch(url,options);
+  let d={};try{d=await r.json()}catch{}
+  if(!r.ok)throw new Error(d.message||d.error||`Request failed (${r.status})`);
+  return d;
+}
+function switchView(viewId,element){
+  document.querySelectorAll('.view-section').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const target=$(viewId);if(target)target.classList.add('active');
+  if(element)element.classList.add('active');
+  else document.querySelector(`.nav-item[data-view="${viewId}"]`)?.classList.add('active');
+  if(viewId==='customersView'){loadCustomers();loadMotorcycles()};
+  if(viewId==='inventoryView')loadMotorcycles();
+  if(viewId==='salesView'){loadCustomers();loadMotorcycles();loadSales()}
+  if(viewId==='installmentsView')loadInstallments();
+  if(viewId==='paymentsView'){loadInstallments();loadSales()}
+  if(viewId==='expensesView')loadExpenses();
+  if(viewId==='suppliersView')loadSuppliers();
+  if(viewId==='purchasesView'){loadSuppliers();loadMotorcycles();loadPurchases()}
+  if(viewId==='reportsView'){loadAllForReports()}
+  if(viewId==='remindersView')loadReminders();
+}
+function openQuickSale(){switchView('salesView');window.scrollTo({top:0,behavior:'smooth'})}
+
+async function loadDashboard(){
+  try{
+    const sales=state.sales.reduce((a,x)=>a+Number(x.total_price||0),0);
+    const purchases=state.purchases.reduce((a,x)=>a+Number(x.purchase_price||0),0);
+    const expenses=state.expenses.reduce((a,x)=>a+Number(x.amount||0),0);
+    const outstandingFromState=Math.max(0,state.sales.reduce((a,x)=>a+Number(x.remaining_balance||0),0));
+    const renderOverview=(totalSales,outstanding)=>{
+      const collected=Math.max(0,totalSales-outstanding);
+      const installmentTotal=state.installments.reduce((a,x)=>a+Number(x.amount||0),0);
+      const pct=(value,total)=>total>0?Math.min(100,Math.max(0,(value/total)*100)):0;
+      const svg=(color)=>`<svg class="ecg-svg" viewBox="0 0 520 90" preserveAspectRatio="none" aria-hidden="true"><path class="ecg-glow" style="--ecg-color:${color}" d="M0 45 L55 45 L72 45 L82 41 L91 49 L101 45 L118 45 L129 45 L137 18 L145 70 L154 45 L174 45 L185 45 L193 38 L201 52 L210 45 L246 45 L258 45 L268 44 L277 47 L286 45 L304 45 L315 45 L324 12 L333 76 L342 45 L360 45 L373 45 L382 39 L391 51 L400 45 L430 45 L444 45 L455 44 L465 46 L474 45 L520 45"/><path class="ecg-line" style="--ecg-color:${color}" d="M0 45 L55 45 L72 45 L82 41 L91 49 L101 45 L118 45 L129 45 L137 18 L145 70 L154 45 L174 45 L185 45 L193 38 L201 52 L210 45 L246 45 L258 45 L268 44 L277 47 L286 45 L304 45 L315 45 L324 12 L333 76 L342 45 L360 45 L373 45 L382 39 L391 51 L400 45 L430 45 L444 45 L455 44 L465 46 L474 45 L520 45"/><circle class="ecg-dot" style="--ecg-color:${color}" cx="324" cy="12" r="2.7"/></svg>`;
+      const heartbeatCard=(label,value,percent,color,sub)=>`<div class="sales-collection-card" style="--ecg-color:${color}"><div class="sales-collection-head"><span class="sales-collection-label">${label}</span><span class="sales-collection-percent">${percent.toFixed(1)}%</span></div><div class="sales-collection-value">${money(value)}</div><div class="sales-collection-sub">${sub}</div><div class="ecg-wrap"><div class="ecg-grid"></div>${svg(color)}</div></div>`;
+      $('dashboardOverview').innerHTML=`<div class="sales-collection-overview">${heartbeatCard('Total Sales',totalSales,100,'#38e0bd','Overall sales value')}${heartbeatCard('Collected / Received',collected,pct(collected,totalSales),'#4ade80','Amount already received')}${heartbeatCard('Outstanding / Remaining',outstanding,pct(outstanding,totalSales),'#f59e0b','Amount still to collect')}${heartbeatCard('Installments',installmentTotal,pct(installmentTotal,totalSales),'#a78bfa','Scheduled installment value')}${heartbeatCard('Expenses',expenses,pct(expenses,totalSales||expenses),'#fb7185','Total showroom expenses')}<div class="sales-collection-footer"><span class="sales-collection-live"></span>Live Sales & Collections heartbeat overview</div></div>`;
+    };
+
+    // Render immediately from data already loaded in the page — no waiting for dashboard API.
+    renderOverview(sales,outstandingFromState);
+
+    const d=await api('/api/dashboard');
+    $('dashMotorcycles').textContent=d.total_motorcycles??0;
+    $('dashMotorcyclesSub').textContent=`${d.motorcycles_in_stock??0} in stock • ${d.motorcycles_sold??0} sold`;
+    $('dashSales').textContent=money(d.total_sales);
+    $('dashSalesSub').textContent=`${d.total_sales_records??state.sales.length??0} sale records`;
+    $('dashStock').textContent=d.motorcycles_in_stock??0;
+    $('dashSold').textContent=d.motorcycles_sold??0;
+    $('dashReserved').textContent=d.motorcycles_reserved??0;
+    $('dashDue').textContent=d.today_due??d.installments_due_today??d.due_installments??0;
+    $('dashOverdue').textContent=d.overdue_installments??d.installments_overdue??0;
+    $('dashPurchases').textContent=money(purchases);
+    $('dashPurchasesSub').textContent=`${state.purchases.length} purchase records`;
+    $('dashProfit').textContent=money(sales-purchases);
+    const totalSales=Number(d.total_sales_amount??sales)||0;
+    const outstanding=Math.max(0,Number(d.outstanding_balance??outstandingFromState)||0);
+    renderOverview(totalSales,outstanding);
+  }catch(e){toast(e.message,true)}
+}
+async function loadCustomers(){
+ try{const d=await api('/api/customers'+(val('customerSearch')?`?search=${encodeURIComponent(val('customerSearch'))}`:''));state.customers=Array.isArray(d)?d:(d.customers||[]);renderCustomers();populateCustomerOptions();}
+ catch(e){$('customerTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}
+}
+function customerMotorcycle(c){
+ try{
+  const m=typeof c.motorcycle==='string'?JSON.parse(c.motorcycle):c.motorcycle;
+  if(m&&typeof m==='object')return m;
+ }catch(e){}
+ return {company:c.motorcycle||'',model:'',model_year:null,color:'',engine_number:'',chassis_number:'',registration_number:'',purchase_price:null,sale_price:null,stock_status:'',purchase_date:null,notes:''};
+}
+function motorcycleTitle(c){const m=customerMotorcycle(c);return `${m.company||''} ${m.model||''}`.trim()||'—';}
+function renderCustomers(){
+ const q=val('customerSearch').toLowerCase();
+ const rows=state.customers.filter(c=>[c.customer_name,c.phone,c.cnic,c.city,c.father_name].some(v=>String(v||'').toLowerCase().includes(q)));
+ $('customerTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Name</th><th>Father</th><th>CNIC</th><th>Phone</th><th>City</th><th>Motorcycle</th><th>Action</th></tr></thead><tbody>${rows.map(c=>`<tr><td>${c.id}</td><td><b>${esc(c.customer_name)}</b></td><td>${esc(c.father_name||'—')}</td><td>${esc(c.cnic||'—')}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.city||'—')}</td><td>${esc(motorcycleTitle(c))}</td><td><button class="btn-secondary" onclick="viewCustomer(${Number(c.id)})">View Profile</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No customers found.</div>';
+}
+$('customerForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const motorcycleInfo={
+  company:val('customer_m_company'),
+  model:val('customer_m_model'),
+  model_year:Number(val('customer_m_model_year'))||null,
+  color:val('customer_m_color'),
+  engine_number:val('customer_m_engine_number'),
+  chassis_number:val('customer_m_chassis_number'),
+  registration_number:val('customer_m_registration_number'),
+  purchase_price:Number(val('customer_m_purchase_price'))||0,
+  sale_price:Number(val('customer_m_sale_price'))||0,
+  stock_status:val('customer_m_stock_status')||'Sold',
+  purchase_date:val('customer_m_purchase_date')||null,
+  notes:val('customer_m_notes')
+ };
+ const body={customer_name:val('customer_name'),father_name:val('father_name'),cnic:val('cnic'),phone:val('phone'),alternate_phone:val('alternate_phone'),address:val('address'),city:val('city'),occupation:val('occupation'),reference_name:val('reference_name'),reference_phone:val('reference_phone'),motorcycle:JSON.stringify(motorcycleInfo)};
+ try{const d=await api('/api/customers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Customer saved');e.target.reset();setVal('customer_m_stock_status','Sold');await Promise.all([loadCustomers(),loadDashboard()])}catch(err){toast(err.message,true)}
+});
+async function viewCustomer(id){
+ try{
+  const c=await api(`/api/customers/${id}`);
+  const sales=state.sales.filter(s=>Number(s.customer_id)===Number(id));
+  let rows=sales;
+  if(!state.sales.length){try{const d=await api('/api/sales');state.sales=Array.isArray(d)?d:(d.sales||[]);rows=state.sales.filter(s=>Number(s.customer_id)===Number(id))}catch{}}
+  const total=rows.reduce((a,s)=>a+Number(s.total_price||0),0), balance=rows.reduce((a,s)=>a+Number(s.remaining_balance||0),0);
+  const m=customerMotorcycle(c);
+  const motorcycleHtml=`<h3 style="margin:24px 0 10px">Motorcycle Information</h3><div class="form-grid"><div><b>Company</b><p>${esc(m.company||'—')}</p></div><div><b>Model</b><p>${esc(m.model||'—')}</p></div><div><b>Model Year</b><p>${esc(m.model_year||'—')}</p></div><div><b>Color</b><p>${esc(m.color||'—')}</p></div><div><b>Engine Number</b><p>${esc(m.engine_number||'—')}</p></div><div><b>Chassis Number</b><p>${esc(m.chassis_number||'—')}</p></div><div><b>Registration Number</b><p>${esc(m.registration_number||'—')}</p></div><div><b>Purchase Price</b><p>${money(m.purchase_price)}</p></div><div><b>Sale Price</b><p>${money(m.sale_price)}</p></div><div><b>Stock Status</b><p>${esc(m.stock_status||'—')}</p></div><div><b>Purchase Date</b><p>${dateOnly(m.purchase_date)}</p></div><div style="grid-column:span 2"><b>Motorcycle Notes</b><p>${esc(m.notes||'—')}</p></div></div>`;
+  openModal(`${c.customer_name||'Customer'} — Profile`, `<div class="form-actions" style="margin-top:0;margin-bottom:18px"><button class="btn-primary" onclick="printCustomerProfile(${Number(id)})">📄 Download / Print PDF</button></div><div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)"><div class="metric-card"><div class="metric-title">Purchases</div><div class="metric-value">${money(total)}</div></div><div class="metric-card"><div class="metric-title">Paid</div><div class="metric-value">${money(total-balance)}</div></div><div class="metric-card"><div class="metric-title">Outstanding</div><div class="metric-value">${money(balance)}</div></div></div><div class="form-grid"><div><b>Customer Name</b><p>${esc(c.customer_name||'—')}</p></div><div><b>Father Name</b><p>${esc(c.father_name||'—')}</p></div><div><b>CNIC</b><p>${esc(c.cnic||'—')}</p></div><div><b>Phone</b><p>${esc(c.phone||'—')}</p></div><div><b>Alternate Phone</b><p>${esc(c.alternate_phone||'—')}</p></div><div><b>City</b><p>${esc(c.city||'—')}</p></div><div><b>Occupation</b><p>${esc(c.occupation||'—')}</p></div><div><b>Reference Name</b><p>${esc(c.reference_name||'—')}</p></div><div><b>Reference Phone</b><p>${esc(c.reference_phone||'—')}</p></div><div style="grid-column:span 2"><b>Address</b><p>${esc(c.address||'—')}</p></div></div>${motorcycleHtml}<h3 style="margin:24px 0 10px">Purchase History</h3>${rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Date</th><th>Motorcycle</th><th>Total</th><th>Balance</th><th>Action</th></tr></thead><tbody>${rows.map(s=>`<tr><td>${s.id}</td><td>${dateOnly(s.sale_date)}</td><td>${esc((s.company||'')+' '+(s.model||''))}</td><td>${money(s.total_price)}</td><td>${money(s.remaining_balance)}</td><td><button class="btn-secondary" onclick="closeModal();viewSale(${s.id})">Open</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No purchase history.</div>'}`);
+ }catch(e){toast(e.message,true)}
+}
+
+function resetMotorcycleForm(){ $('motorcycleForm').reset();setVal('motorcycle_id','');setVal('m_stock_status','In Stock');}
+$('motorcycleForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const id=val('motorcycle_id');
+ const body={company:val('m_company'),model:val('m_model'),model_year:Number(val('m_model_year'))||null,color:val('m_color'),engine_number:val('m_engine_number'),chassis_number:val('m_chassis_number'),registration_number:val('m_registration_number'),purchase_price:Number(val('m_purchase_price'))||0,sale_price:Number(val('m_sale_price'))||0,stock_status:val('m_stock_status')||'In Stock',purchase_date:val('m_purchase_date')||null,notes:val('m_notes')};
+ try{const d=await api(id?`/api/motorcycles/${id}`:'/api/motorcycles',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Motorcycle saved');resetMotorcycleForm();await Promise.all([loadMotorcycles(),loadDashboard()])}catch(err){toast(err.message,true)}
+});
+async function loadMotorcycles(){
+ try{const d=await api('/api/motorcycles'+(val('motorcycleSearch')?`?search=${encodeURIComponent(val('motorcycleSearch'))}`:''));state.motorcycles=Array.isArray(d)?d:(d.motorcycles||[]);renderMotorcycles();populateMotorcycleOptions();populatePurchaseMotorcycleOptions();}
+ catch(e){$('motorcycleTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}
+}
+function renderMotorcycles(){
+ const q=val('motorcycleSearch').toLowerCase(),rows=state.motorcycles.filter(m=>[m.company,m.model,m.engine_number,m.chassis_number,m.registration_number,m.color].some(v=>String(v||'').toLowerCase().includes(q)));
+ $('motorcycleTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Motorcycle</th><th>Engine</th><th>Chassis</th><th>Purchase</th><th>Sale</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map(m=>`<tr><td>${m.id}</td><td><b>${esc(m.company)} ${esc(m.model)}</b><br><small>${esc(m.color||'')} ${m.model_year||''}</small></td><td>${esc(m.engine_number||'—')}</td><td>${esc(m.chassis_number||'—')}</td><td>${money(m.purchase_price)}</td><td>${money(m.sale_price)}</td><td>${esc(m.stock_status||'—')}</td><td><button class="btn-secondary" onclick="editMotorcycle(${m.id})">Edit</button> <button class="btn-secondary" onclick="deleteMotorcycle(${m.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No motorcycles found.</div>';
+}
+function editMotorcycle(id){const m=state.motorcycles.find(x=>Number(x.id)===Number(id));if(!m)return;switchView('inventoryView');setVal('motorcycle_id',m.id);setVal('m_company',m.company);setVal('m_model',m.model);setVal('m_model_year',m.model_year);setVal('m_color',m.color);setVal('m_engine_number',m.engine_number);setVal('m_chassis_number',m.chassis_number);setVal('m_registration_number',m.registration_number);setVal('m_purchase_price',m.purchase_price);setVal('m_sale_price',m.sale_price);setVal('m_stock_status',m.stock_status||'In Stock');setVal('m_purchase_date',dateOnly(m.purchase_date)==='—'?'':dateOnly(m.purchase_date));setVal('m_notes',m.notes)}
+async function deleteMotorcycle(id){if(!confirm('Delete this motorcycle?'))return;try{const d=await api(`/api/motorcycles/${id}`,{method:'DELETE'});toast(d.message||'Deleted');await loadMotorcycles();loadDashboard()}catch(e){toast(e.message,true)}}
+
+function populateCustomerOptions(){const s=$('sale_customer_id');if(!s)return;s.innerHTML='<option value="">Select customer</option>'+state.customers.map(c=>`<option value="${c.id}">${esc(c.customer_name)} — ${esc(c.phone||'')}</option>`).join('')}
+function populateCustomerMotorcycleOptions(){const s=$('customer_motorcycle');if(!s)return;s.innerHTML='<option value="">Select motorcycle</option>'+state.motorcycles.map(m=>`<option value="${m.id}">${esc(m.company||'')} ${esc(m.model||'')} — ${esc(m.engine_number||'No engine')}</option>`).join('');showCustomerMotorcycleDetails()}
+function showCustomerMotorcycleDetails(){const s=$('customer_motorcycle'),box=$('customerMotorcycleDetails');if(!s||!box)return;const m=state.motorcycles.find(x=>Number(x.id)===Number(s.value));if(!m){box.classList.remove('active');return}box.classList.add('active');const set=(id,v)=>{const el=$(id);if(el)el.textContent=String(v??'—')||'—'};set('cm_company',m.company);set('cm_model',m.model);set('cm_model_year',m.model_year);set('cm_color',m.color);set('cm_engine',m.engine_number);set('cm_chassis',m.chassis_number);set('cm_registration',m.registration_number);set('cm_purchase_price',money(m.purchase_price));set('cm_sale_price',money(m.sale_price));set('cm_stock_status',m.stock_status);set('cm_purchase_date',dateOnly(m.purchase_date));set('cm_notes',m.notes)}
+$('customer_motorcycle')?.addEventListener('change',showCustomerMotorcycleDetails)
+function populateMotorcycleOptions(){const s=$('sale_motorcycle_id');if(!s)return;s.innerHTML='<option value="">Select in-stock motorcycle</option>'+state.motorcycles.filter(m=>m.stock_status==='In Stock').map(m=>`<option value="${m.id}">${esc(m.company)} ${esc(m.model)} — ${esc(m.engine_number||'No engine')} — ${money(m.sale_price)}</option>`).join('')}
+function initSaleDefaults(){setVal('sale_date',today());setVal('first_due_date',today());setVal('advance_payment',0);setVal('installment_count',1);setVal('reminder_days',3);setVal('sale_type','Cash');toggleInstallmentFields();calculateSaleValues()}
+function toggleInstallmentFields(){const show=val('sale_type')==='Installment';['installmentCountGroup','installmentAmountGroup','firstDueGroup','reminderGroup'].forEach(id=>$(id).style.display=show?'flex':'none');calculateSaleValues()}
+function calculateSaleValues(){const total=Number(val('sale_total_price'))||0,advance=Number(val('advance_payment'))||0,remaining=Math.max(0,total-advance),count=Math.max(1,Number(val('installment_count'))||1),monthly=val('sale_type')==='Installment'?remaining/count:0;setVal('remaining_balance',remaining);setVal('installment_amount',monthly.toFixed(2));$('saleSummaryTotal').textContent=money(total);$('saleSummaryAdvance').textContent=money(advance);$('saleSummaryRemaining').textContent=money(remaining);$('saleSummaryMonthly').textContent=money(monthly)}
+['sale_type','sale_total_price','advance_payment','installment_count'].forEach(id=>$(id)?.addEventListener('input',id==='sale_type'?toggleInstallmentFields:calculateSaleValues));
+$('saleForm').addEventListener('submit',async e=>{
+ e.preventDefault();calculateSaleValues();
+ const body={customer_id:Number(val('sale_customer_id')),motorcycle_id:Number(val('sale_motorcycle_id')),sale_date:val('sale_date'),sale_type:val('sale_type'),total_price:Number(val('sale_total_price')),advance_payment:Number(val('advance_payment'))||0,installment_count:Number(val('installment_count'))||null,first_due_date:val('first_due_date')||null,reminder_days:Number(val('reminder_days'))};
+ try{
+  const d=await api('/api/sales',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  });
+
+  toast(`${d.message||'Sale saved'} — Sale ID ${d.sale_id||''}`);
+
+  e.target.reset();
+  initSaleDefaults();
+
+  await loadMotorcycles();
+
+  const soldId=Number(body.motorcycle_id)||0;
+  const sold=state.motorcycles.find(m=>Number(m.id)===soldId);
+
+  if(sold && sold.stock_status==='In Stock'){
+    const soldBody={
+      company:sold.company,
+      model:sold.model,
+      model_year:Number(sold.model_year)||null,
+      color:sold.color||'',
+      engine_number:sold.engine_number||'',
+      chassis_number:sold.chassis_number||'',
+      registration_number:sold.registration_number||'',
+      purchase_price:Number(sold.purchase_price)||0,
+      sale_price:Number(sold.sale_price)||0,
+      stock_status:'Sold',
+      purchase_date:sold.purchase_date||null,
+      notes:sold.notes||''
+    };
+
+    await api(`/api/motorcycles/${soldId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(soldBody)
+    });
+
+    await loadMotorcycles();
+  }
+
+  await Promise.all([
+    loadSales(),
+    loadInstallments(),
+    loadDashboard()
+  ]);
+
+}catch(err){
+  toast(err.message,true)
+}
+});
+async function loadSales(){
+ try{const d=await api('/api/sales');state.sales=Array.isArray(d)?d:(d.sales||[]);renderSales();populatePaymentSaleOptions()}
+ catch(e){$('salesTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}
+}
+function renderSales(){const q=val('salesSearch').toLowerCase(),rows=state.sales.filter(s=>[s.customer_name,s.phone,s.company,s.model,s.engine_number,s.chassis_number,s.sale_type].some(v=>String(v||'').toLowerCase().includes(q)));$('salesTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Date</th><th>Customer</th><th>Motorcycle</th><th>Type</th><th>Total</th><th>Advance</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map(s=>`<tr><td>${s.id}</td><td>${dateOnly(s.sale_date)}</td><td>${esc(s.customer_name||'—')}</td><td>${esc((s.company||'')+' '+(s.model||''))}</td><td>${esc(s.sale_type||'Cash')}</td><td>${money(s.total_price)}</td><td>${money(s.advance_payment)}</td><td>${money(s.remaining_balance)}</td><td>${esc(s.sale_status||'Active')}</td><td><button class="btn-secondary" onclick="viewSale(${s.id})">View</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No sales found.</div>'}
+async function viewSale(id){try{const d=await api(`/api/sales/${id}`),s=d.sale,inst=d.installments||[];openModal(`Sale #${id}`,`<div class="metrics-grid" style="grid-template-columns:repeat(4,1fr)"><div class="metric-card"><div class="metric-title">Customer</div><div class="metric-value" style="font-size:1rem">${esc(s.customer_name||'—')}</div></div><div class="metric-card"><div class="metric-title">Motorcycle</div><div class="metric-value" style="font-size:1rem">${esc((s.company||'')+' '+(s.model||''))}</div></div><div class="metric-card"><div class="metric-title">Total</div><div class="metric-value" style="font-size:1.2rem">${money(s.total_price)}</div></div><div class="metric-card"><div class="metric-title">Remaining</div><div class="metric-value" style="font-size:1.2rem">${money(s.remaining_balance)}</div></div></div><p><b>Sale Date:</b> ${dateOnly(s.sale_date)} &nbsp; <b>Type:</b> ${esc(s.sale_type||'Cash')}</p><h3 style="margin:22px 0 10px">Installments</h3>${inst.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>#</th><th>Due</th><th>Amount</th><th>Paid</th><th>Status</th></tr></thead><tbody>${inst.map(i=>`<tr><td>${i.installment_number}</td><td>${dateOnly(i.due_date)}</td><td>${money(i.amount)}</td><td>${money(i.paid_amount)}</td><td>${esc(i.status)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No installments.</div>'}`)}catch(e){toast(e.message,true)}}
+function populatePaymentSaleOptions(){}
+async function loadInstallments(){try{const d=await api('/api/installments');state.installments=Array.isArray(d)?d:(d.installments||[]);updateInstallmentCards();renderInstallments();populatePaymentInstallments()}catch(e){$('installmentTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}}
+function updateInstallmentCards(){const active=state.installments.filter(i=>i.status==='Pending'||i.status==='Partial'),t=today(),due=active.filter(i=>dateOnly(i.due_date)===t),overdue=active.filter(i=>dateOnly(i.due_date)<t),bal=active.reduce((a,i)=>a+Math.max(0,Number(i.amount||0)-Number(i.paid_amount||0)),0);$('instTotal').textContent=state.installments.length;$('instDue').textContent=due.length;$('instOverdue').textContent=overdue.length;$('instBalance').textContent=money(bal)}
+function renderInstallments(){let rows=[...state.installments],f=val('installmentFilter'),t=today();if(f==='due')rows=rows.filter(i=>dateOnly(i.due_date)===t&&i.status!=='Paid');if(f==='overdue')rows=rows.filter(i=>dateOnly(i.due_date)<t&&i.status!=='Paid');if(f==='pending')rows=rows.filter(i=>i.status==='Pending'||i.status==='Partial');if(f==='paid')rows=rows.filter(i=>i.status==='Paid');$('installmentTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Customer</th><th>Motorcycle</th><th>#</th><th>Due</th><th>Amount</th><th>Paid</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map(i=>`<tr><td>${i.id}</td><td>${esc(i.customer_name||'—')}</td><td>${esc((i.company||'')+' '+(i.model||''))}</td><td>${i.installment_number}</td><td>${dateOnly(i.due_date)}</td><td>${money(i.amount)}</td><td>${money(i.paid_amount)}</td><td>${esc(i.status)}</td><td><button class="btn-secondary" onclick="preparePayment(${i.id})">Pay</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No installments found.</div>'}
+function populatePaymentInstallments(){const s=$('payment_installment_id');if(!s)return;s.innerHTML='<option value="">Select installment</option>'+state.installments.filter(i=>i.status!=='Paid').map(i=>`<option value="${i.id}">#${i.id} — ${esc(i.customer_name||'')} — Due ${dateOnly(i.due_date)} — Balance ${money(Number(i.amount||0)-Number(i.paid_amount||0))}</option>`).join('')}
+function preparePayment(id){switchView('paymentsView');setVal('payment_installment_id',id);const i=state.installments.find(x=>Number(x.id)===Number(id));if(i)setVal('payment_amount',Math.max(0,Number(i.amount||0)-Number(i.paid_amount||0)));setVal('payment_date',today())}
+$('paymentForm').addEventListener('submit',async e=>{e.preventDefault();const body={installment_id:Number(val('payment_installment_id')),amount:Number(val('payment_amount')),payment_date:val('payment_date')||today(),payment_method:val('payment_method'),notes:val('payment_notes')};try{const d=await api('/api/installment-payments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Payment saved');e.target.reset();setVal('payment_date',today());await Promise.all([loadInstallments(),loadSales(),loadDashboard()])}catch(err){toast(err.message,true)}})
+
+async function loadExpenses(){try{const d=await api('/api/expenses'+(val('expenseSearch')?`?search=${encodeURIComponent(val('expenseSearch'))}`:''));state.expenses=Array.isArray(d)?d:(d.expenses||[]);renderExpenses()}catch(e){$('expenseTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}}
+function renderExpenses(){const q=val('expenseSearch').toLowerCase(),rows=state.expenses.filter(x=>[x.expense_title,x.category,x.payment_method,x.description].some(v=>String(v||'').toLowerCase().includes(q)));$('expenseTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.id}</td><td>${dateOnly(x.expense_date)}</td><td>${esc(x.expense_title)}</td><td>${esc(x.category)}</td><td>${money(x.amount)}</td><td>${esc(x.payment_method||'Cash')}</td><td><button class="btn-secondary" onclick="deleteExpense(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No expenses found.</div>'}
+$('expenseForm').addEventListener('submit',async e=>{e.preventDefault();const body={expense_title:val('expense_title'),category:val('expense_category'),amount:Number(val('expense_amount')),expense_date:val('expense_date'),payment_method:val('expense_payment_method'),description:val('expense_description')};try{const d=await api('/api/expenses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Expense saved');e.target.reset();setVal('expense_date',today());await Promise.all([loadExpenses(),loadDashboard()])}catch(err){toast(err.message,true)}})
+async function deleteExpense(id){if(!confirm('Delete this expense?'))return;try{await api(`/api/expenses/${id}`,{method:'DELETE'});toast('Expense deleted');await loadExpenses();loadDashboard()}catch(e){toast(e.message,true)}}
+
+function resetSupplierForm(){$('supplierForm').reset();setVal('supplier_id','')}
+$('supplierForm').addEventListener('submit',async e=>{e.preventDefault();const id=val('supplier_id'),body={supplier_name:val('supplier_name'),phone:val('supplier_phone'),alternate_phone:val('supplier_alt'),cnic:val('supplier_cnic'),address:val('supplier_address'),city:val('supplier_city'),company_name:val('supplier_company'),notes:val('supplier_notes')};try{const d=await api(id?`/api/suppliers/${id}`:'/api/suppliers',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Supplier saved');resetSupplierForm();await loadSuppliers()}catch(err){toast(err.message,true)}})
+async function loadSuppliers(){try{const d=await api('/api/suppliers'+(val('supplierSearch')?`?search=${encodeURIComponent(val('supplierSearch'))}`:''));state.suppliers=Array.isArray(d)?d:(d.suppliers||[]);renderSuppliers();populateSupplierOptions()}catch(e){$('supplierTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}}
+function renderSuppliers(){const q=val('supplierSearch').toLowerCase(),rows=state.suppliers.filter(x=>[x.supplier_name,x.phone,x.cnic,x.city,x.company_name].some(v=>String(v||'').toLowerCase().includes(q)));$('supplierTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Supplier</th><th>Phone</th><th>City</th><th>Company</th><th>Action</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.id}</td><td>${esc(x.supplier_name)}</td><td>${esc(x.phone||'—')}</td><td>${esc(x.city||'—')}</td><td>${esc(x.company_name||'—')}</td><td><button class="btn-secondary" onclick="editSupplier(${x.id})">Edit</button> <button class="btn-secondary" onclick="deleteSupplier(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No suppliers found.</div>'}
+function populateSupplierOptions(){const s=$('purchase_supplier_id');if(!s)return;s.innerHTML='<option value="">Select supplier</option>'+state.suppliers.map(x=>`<option value="${x.id}">${esc(x.supplier_name)} — ${esc(x.phone||'')}</option>`).join('')}
+function editSupplier(id){const x=state.suppliers.find(v=>Number(v.id)===Number(id));if(!x)return;switchView('suppliersView');setVal('supplier_id',x.id);setVal('supplier_name',x.supplier_name);setVal('supplier_phone',x.phone);setVal('supplier_alt',x.alternate_phone);setVal('supplier_cnic',x.cnic);setVal('supplier_address',x.address);setVal('supplier_city',x.city);setVal('supplier_company',x.company_name);setVal('supplier_notes',x.notes)}
+async function deleteSupplier(id){if(!confirm('Delete this supplier?'))return;try{const d=await api(`/api/suppliers/${id}`,{method:'DELETE'});toast(d.message||'Supplier deleted');await loadSuppliers()}catch(e){toast(e.message,true)}}
+
+function populatePurchaseMotorcycleOptions(){}
+function resetPurchaseForm(){$('purchaseForm').reset();setVal('purchase_id','');setVal('purchase_motorcycle_id','');setVal('purchase_motorcycle_name','');setVal('purchase_date_entry',today());setVal('purchase_payment_amount',0)}
+function calculatePurchaseValues(){}
+function parseManualMotorcycleName(name){const parts=String(name||'').trim().split(/\s+/).filter(Boolean);if(parts.length<=1)return{company:'Other',model:parts[0]||'Motorcycle'};return{company:parts.shift(),model:parts.join(' ')}}
+async function getOrCreatePurchaseMotorcycle(name,purchasePrice,purchaseDate){const clean=String(name||'').trim();if(!clean)return null;const existing=state.motorcycles.find(m=>`${String(m.company||'').trim()} ${String(m.model||'').trim()}`.trim().toLowerCase()===clean.toLowerCase());if(existing)return existing.id;const parsed=parseManualMotorcycleName(clean);const created=await api('/api/motorcycles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:parsed.company,model:parsed.model,model_year:null,color:'',engine_number:'',chassis_number:'',registration_number:'',purchase_price:Number(purchasePrice)||0,sale_price:0,stock_status:'In Stock',purchase_date:purchaseDate||null,notes:'Added from Purchase / New Stock'})});return created.id||created.motorcycle_id||created.motorcycle?.id||null}
+$('purchaseForm').addEventListener('submit',async e=>{e.preventDefault();const id=val('purchase_id');let motorcycleId=Number(val('purchase_motorcycle_id'))||null;const motorcycleName=val('purchase_motorcycle_name');try{if(!id&&motorcycleName.trim()){motorcycleId=await getOrCreatePurchaseMotorcycle(motorcycleName,val('purchase_price_entry'),val('purchase_date_entry'));if(!motorcycleId)throw new Error('Motorcycle stock could not be created.')}const body={supplier_id:Number(val('purchase_supplier_id'))||null,motorcycle_id:motorcycleId,purchase_date:val('purchase_date_entry'),purchase_price:Number(val('purchase_price_entry')),payment_amount:Number(val('purchase_payment_amount'))||0,payment_method:val('purchase_payment_method')||'Cash',invoice_number:val('purchase_invoice_number'),notes:val('purchase_notes')};const d=await api(id?`/api/purchases/${id}`:'/api/purchases',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});toast(d.message||'Purchase saved');resetPurchaseForm();await Promise.all([loadPurchases(),loadMotorcycles(),loadDashboard()])}catch(err){toast(err.message,true)}})
+async function loadPurchases(){try{const d=await api('/api/purchases'+(val('purchaseSearch')?`?search=${encodeURIComponent(val('purchaseSearch'))}`:''));state.purchases=Array.isArray(d)?d:(d.purchases||[]);renderPurchases()}catch(e){$('purchaseTable').innerHTML=`<div class="empty">❌ ${esc(e.message)}</div>`}}
+function renderPurchases(){const q=val('purchaseSearch').toLowerCase(),rows=state.purchases.filter(x=>[x.supplier_name,x.company,x.model,x.engine_number,x.invoice_number,x.payment_status].some(v=>String(v||'').toLowerCase().includes(q)));$('purchaseTable').innerHTML=rows.length?`<table style="width:100%;border-collapse:collapse"><thead><tr><th>ID</th><th>Date</th><th>Supplier</th><th>Motorcycle</th><th>Invoice</th><th>Purchase</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.id}</td><td>${dateOnly(x.purchase_date)}</td><td>${esc(x.supplier_name||'—')}</td><td>${esc((x.company||'')+' '+(x.model||''))}</td><td>${esc(x.invoice_number||'—')}</td><td>${money(x.purchase_price)}</td><td>${money(x.payment_amount)}</td><td>${money(x.remaining_balance)}</td><td>${esc(x.payment_status||'Unpaid')}</td><td><button class="btn-secondary" onclick="editPurchase(${x.id})">Edit</button> <button class="btn-secondary" onclick="deletePurchase(${x.id})">Delete</button></td></tr>`).join('')}</tbody></table>`:'<div class="empty">No purchases found.</div>'}
+function editPurchase(id){const x=state.purchases.find(v=>Number(v.id)===Number(id));if(!x)return;switchView('purchasesView');setVal('purchase_id',x.id);setVal('purchase_supplier_id',x.supplier_id);setVal('purchase_motorcycle_id',x.motorcycle_id);setVal('purchase_motorcycle_name',`${x.company||''} ${x.model||''}`.trim());setVal('purchase_date_entry',dateOnly(x.purchase_date));setVal('purchase_price_entry',x.purchase_price);setVal('purchase_payment_amount',x.payment_amount);setVal('purchase_payment_method',x.payment_method||'Cash');setVal('purchase_invoice_number',x.invoice_number);setVal('purchase_notes',x.notes)}
+async function deletePurchase(id){if(!confirm('Delete this purchase?'))return;try{const d=await api(`/api/purchases/${id}`,{method:'DELETE'});toast(d.message||'Purchase deleted');await Promise.all([loadPurchases(),loadMotorcycles(),loadDashboard()])}catch(e){toast(e.message,true)}}
+
+async function loadReminders(){try{const [d,o]=await Promise.all([api('/api/installments/due'),api('/api/installments/overdue')]);state.due=Array.isArray(d)?d:[];state.overdue=Array.isArray(o)?o:[];renderReminderList('dueReminders',state.due);renderReminderList('overdueReminders',state.overdue)}catch(e){toast(e.message,true)}}
+function renderReminderList(id,rows){$(id).innerHTML=rows.length?rows.map(i=>`<div style="padding:13px 0;border-bottom:1px solid #E2E8E6;overflow:auto"><b>${esc(i.customer_name||'Customer')}</b><br><span>${esc((i.company||'')+' '+(i.model||''))}</span><br><small>Due: ${dateOnly(i.due_date)} • Balance: ${money(Number(i.amount||0)-Number(i.paid_amount||0))}</small><div style="margin-top:9px;display:flex;gap:7px;justify-content:flex-end"><button class="btn-secondary" style="padding:6px 10px" onclick="printReminder(${Number(i.id)})">📄 PDF</button><button class="btn-secondary" style="padding:6px 10px" onclick="preparePayment(${i.id})">Pay</button></div></div>`).join(''):'<div class="empty">No reminders.</div>'}
+
+async function loadAllForReports(){await Promise.all([loadCustomers(),loadMotorcycles(),loadSales(),loadInstallments(),loadExpenses(),loadSuppliers(),loadPurchases()])}
+function printCustomerProfile(id){
+  const c=state.customers.find(x=>Number(x.id)===Number(id));
+  const rows=state.sales.filter(s=>Number(s.customer_id)===Number(id));
+  if(!c){toast('Customer profile not found',true);return}
+  const m=customerMotorcycle(c);
+  const total=rows.reduce((a,s)=>a+Number(s.total_price||0),0),balance=rows.reduce((a,s)=>a+Number(s.remaining_balance||0),0);
+  const w=window.open('','_blank','width=900,height=700');if(!w){toast('Please allow pop-ups for PDF',true);return}
+  w.document.write(`<html><head><title>Customer & Motorcycle Profile - ${esc(c.customer_name||'Customer')}</title><style>body{font-family:Arial,sans-serif;padding:35px;color:#1c2826}h1{margin:0 0 5px;color:#032b25}h2{color:#032b25;margin-top:28px}.meta{color:#6e7c79;margin-bottom:22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;border:1px solid #ddd;padding:18px;border-radius:10px}.item b{display:block;color:#52635f;font-size:12px;text-transform:uppercase}.item span{display:block;margin-top:5px;font-size:15px}.summary{display:flex;gap:12px;margin:18px 0}.box{border:1px solid #ddd;padding:12px;flex:1;border-radius:8px}.box b{display:block;font-size:12px;color:#6e7c79}.box strong{font-size:18px;display:block;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #ddd;padding:9px;text-align:left}th{background:#f2f6f4}.section{margin-top:24px}.section-title{font-size:18px;font-weight:800;color:#032b25;margin-bottom:10px}.footer{margin-top:35px;color:#6e7c79;font-size:12px}@media print{button{display:none}}</style></head><body><h1>AHMAD MOTORS</h1><div class="meta">Customer & Motorcycle Complete Profile</div><h2>Customer Information</h2><div class="grid"><div class="item"><b>Customer Name</b><span>${esc(c.customer_name||'—')}</span></div><div class="item"><b>Father Name</b><span>${esc(c.father_name||'—')}</span></div><div class="item"><b>CNIC</b><span>${esc(c.cnic||'—')}</span></div><div class="item"><b>Phone</b><span>${esc(c.phone||'—')}</span></div><div class="item"><b>Alternate Phone</b><span>${esc(c.alternate_phone||'—')}</span></div><div class="item"><b>City</b><span>${esc(c.city||'—')}</span></div><div class="item"><b>Occupation</b><span>${esc(c.occupation||'—')}</span></div><div class="item"><b>Reference Name</b><span>${esc(c.reference_name||'—')}</span></div><div class="item"><b>Reference Phone</b><span>${esc(c.reference_phone||'—')}</span></div><div class="item"><b>Address</b><span>${esc(c.address||'—')}</span></div></div><div class="section"><div class="section-title">Motorcycle Information</div><div class="grid"><div class="item"><b>Company</b><span>${esc(m.company||'—')}</span></div><div class="item"><b>Model</b><span>${esc(m.model||'—')}</span></div><div class="item"><b>Model Year</b><span>${esc(m.model_year||'—')}</span></div><div class="item"><b>Color</b><span>${esc(m.color||'—')}</span></div><div class="item"><b>Engine Number</b><span>${esc(m.engine_number||'—')}</span></div><div class="item"><b>Chassis Number</b><span>${esc(m.chassis_number||'—')}</span></div><div class="item"><b>Registration Number</b><span>${esc(m.registration_number||'—')}</span></div><div class="item"><b>Purchase Price</b><span>${money(m.purchase_price)}</span></div><div class="item"><b>Sale Price</b><span>${money(m.sale_price)}</span></div><div class="item"><b>Stock Status</b><span>${esc(m.stock_status||'—')}</span></div><div class="item"><b>Purchase Date</b><span>${dateOnly(m.purchase_date)}</span></div><div class="item"><b>Motorcycle Notes</b><span>${esc(m.notes||'—')}</span></div></div></div><div class="summary"><div class="box"><b>Total Purchases</b><strong>${money(total)}</strong></div><div class="box"><b>Paid</b><strong>${money(total-balance)}</strong></div><div class="box"><b>Outstanding</b><strong>${money(balance)}</strong></div></div><h2>Purchase History</h2>${rows.length?`<table><thead><tr><th>ID</th><th>Date</th><th>Motorcycle</th><th>Total</th><th>Balance</th></tr></thead><tbody>${rows.map(s=>`<tr><td>${s.id}</td><td>${dateOnly(s.sale_date)}</td><td>${esc((s.company||'')+' '+(s.model||''))}</td><td>${money(s.total_price)}</td><td>${money(s.remaining_balance)}</td></tr>`).join('')}</tbody></table>`:'<p>No purchase history.</p>'}<div class="footer">Generated from Ahmad Motors showroom system.</div></body></html>`);w.document.close();setTimeout(()=>w.print(),300)
+}
+function printReminder(id){
+  const item=[...state.due,...state.overdue].find(x=>Number(x.id)===Number(id));
+  if(!item){toast('Reminder not found',true);return}
+  const remaining=Math.max(0,Number(item.amount||0)-Number(item.paid_amount||0));
+  const isOverdue=dateOnly(item.due_date)<today();
+  const w=window.open('','_blank','width=900,height=750');if(!w){toast('Please allow pop-ups for PDF',true);return}
+  w.document.write(`<html><head><title>Payment Reminder - ${esc(item.customer_name||'Customer')}</title><style>body{font-family:Arial,sans-serif;padding:35px;color:#1c2826}h1{margin:0;color:#032b25}h2{color:#032b25;margin-top:25px}.head{border-bottom:3px solid #032b25;padding-bottom:15px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;border:1px solid #ddd;padding:16px;border-radius:10px}.item b{display:block;color:#52635f;font-size:11px;text-transform:uppercase}.item span{display:block;margin-top:4px;font-size:14px}.notice{margin:22px 0;padding:18px;border:1px solid #ddd;border-radius:10px;background:#f8faf9}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #e2e8e6}.amount{font-size:26px;font-weight:800;color:${isOverdue?'#dc2626':'#d97706'};margin-top:16px}.footer{margin-top:30px;color:#6e7c79;font-size:12px}@media print{button{display:none}}</style></head><body><div class="head"><h1>AHMAD MOTORS</h1><div>Installment Payment Reminder</div></div><h2>Customer Information</h2><div class="grid"><div class="item"><b>Customer Name</b><span>${esc(item.customer_name||'—')}</span></div><div class="item"><b>Father Name</b><span>${esc(item.father_name||'—')}</span></div><div class="item"><b>CNIC</b><span>${esc(item.cnic||'—')}</span></div><div class="item"><b>Phone</b><span>${esc(item.phone||'—')}</span></div><div class="item"><b>Alternate Phone</b><span>${esc(item.alternate_phone||'—')}</span></div><div class="item"><b>City</b><span>${esc(item.city||'—')}</span></div><div class="item"><b>Occupation</b><span>${esc(item.occupation||'—')}</span></div><div class="item"><b>Reference Name</b><span>${esc(item.reference_name||'—')}</span></div><div class="item"><b>Reference Phone</b><span>${esc(item.reference_phone||'—')}</span></div><div class="item"><b>Address</b><span>${esc(item.address||'—')}</span></div></div><h2>Motorcycle Information</h2><div class="grid"><div class="item"><b>Company</b><span>${esc(item.company||'—')}</span></div><div class="item"><b>Model</b><span>${esc(item.model||'—')}</span></div><div class="item"><b>Model Year</b><span>${esc(item.model_year||'—')}</span></div><div class="item"><b>Color</b><span>${esc(item.color||'—')}</span></div><div class="item"><b>Engine Number</b><span>${esc(item.engine_number||'—')}</span></div><div class="item"><b>Chassis Number</b><span>${esc(item.chassis_number||'—')}</span></div><div class="item"><b>Registration Number</b><span>${esc(item.registration_number||'—')}</span></div><div class="item"><b>Purchase Price</b><span>${money(item.purchase_price)}</span></div><div class="item"><b>Sale Price</b><span>${money(item.sale_price)}</span></div><div class="item"><b>Stock Status</b><span>${esc(item.stock_status||'—')}</span></div><div class="item"><b>Purchase Date</b><span>${dateOnly(item.purchase_date)}</span></div><div class="item"><b>Motorcycle Notes</b><span>${esc(item.motorcycle_notes||'—')}</span></div></div><div class="notice"><h2>Payment Details</h2><div class="row"><b>Due Date</b><span>${dateOnly(item.due_date)}</span></div><div class="row"><b>Status</b><span>${isOverdue?'OVERDUE':'DUE / TODAY'}</span></div><div class="row"><b>Installment Amount</b><span>${money(item.amount)}</span></div><div class="row"><b>Already Paid</b><span>${money(item.paid_amount)}</span></div><div class="amount">Remaining: ${money(remaining)}</div></div><p>Please arrange payment of the remaining installment amount.</p><div class="footer">Generated from Ahmad Motors showroom system.</div></body></html>`);w.document.close();setTimeout(()=>w.print(),300)
+}
+function generateReport(){const type=val('reportType'),q=val('reportSearch').toLowerCase();let rows=[];if(type==='summary'){const sales=state.sales.reduce((a,x)=>a+Number(x.total_price||0),0),purchases=state.purchases.reduce((a,x)=>a+Number(x.purchase_price||0),0),expenses=state.expenses.reduce((a,x)=>a+Number(x.amount||0),0);rows=[['Metric','Value'],['Customers',state.customers.length],['Motorcycles',state.motorcycles.length],['Sales Amount',money(sales)],['Purchase Amount',money(purchases)],['Expenses',money(expenses)],['Estimated Gross Profit',money(sales-purchases)],['Estimated Net',money(sales-purchases-expenses)]]}else if(type==='sales')rows=[['ID','Date','Customer','Motorcycle','Type','Total','Advance','Balance'],...state.sales.map(x=>[x.id,dateOnly(x.sale_date),x.customer_name||'—',`${x.company||''} ${x.model||''}`.trim(),x.sale_type||'Cash',money(x.total_price),money(x.advance_payment),money(x.remaining_balance)])];else if(type==='purchases')rows=[['ID','Date','Supplier','Motorcycle','Invoice','Purchase','Paid','Balance'],...state.purchases.map(x=>[x.id,dateOnly(x.purchase_date),x.supplier_name||'—',`${x.company||''} ${x.model||''}`.trim(),x.invoice_number||'—',money(x.purchase_price),money(x.payment_amount),money(x.remaining_balance)])];else if(type==='expenses')rows=[['ID','Date','Title','Category','Amount','Method'],...state.expenses.map(x=>[x.id,dateOnly(x.expense_date),x.expense_title,x.category,money(x.amount),x.payment_method||'Cash'])];else rows=[['ID','Due','Customer','Motorcycle','#','Amount','Paid','Status'],...state.installments.map(x=>[x.id,dateOnly(x.due_date),x.customer_name||'—',`${x.company||''} ${x.model||''}`.trim(),x.installment_number,money(x.amount),money(x.paid_amount),x.status])];if(q)rows=[rows[0],...rows.slice(1).filter(r=>r.join(' ').toLowerCase().includes(q))];state.reportRows=rows;$('reportTable').innerHTML=`<table style="width:100%;border-collapse:collapse"><thead><tr>${rows[0].map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1).map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;$('reportSummary').innerHTML=`<div class="dashboard-card" style="background:#F8FAF9">Generated ${rows.length-1} records.</div>`}
+function printReport(){const w=window.open('','_blank');w.document.write(`<html><head><title>Ahmad Motors Report</title><style>body{font-family:Arial;padding:30px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left}</style></head><body><h1>Ahmad Motors Report</h1>${$('reportTable').innerHTML}</body></html>`);w.document.close();w.print()}
+function openModal(title,content){$('modalTitle').textContent=title;$('modalContent').innerHTML=content;$('appModal').style.display='flex'}
+function closeModal(){$('appModal').style.display='none'}
+$('appModal').addEventListener('click',e=>{if(e.target.id==='appModal')closeModal()})
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()})
+
+document.querySelectorAll('.nav-item').forEach(x=>x.addEventListener('click',()=>{}))
+;['customerSearch','motorcycleSearch','salesSearch','expenseSearch','supplierSearch','purchaseSearch'].forEach(id=>$(id)?.addEventListener('input',()=>{if(id==='customerSearch')renderCustomers();if(id==='motorcycleSearch')renderMotorcycles();if(id==='salesSearch')renderSales();if(id==='expenseSearch')renderExpenses();if(id==='supplierSearch')renderSuppliers();if(id==='purchaseSearch')renderPurchases()}))
+$('installmentFilter').addEventListener('change',renderInstallments)
+$('reportSearch').addEventListener('input',generateReport)
+$('globalSearch').addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.trim();if(!q)return;switchView('customersView');setVal('customerSearch',q);loadCustomers()}})
+async function refreshAll(){try{await loadAllForReports();await loadDashboard();toast('All data refreshed')}catch(e){toast(e.message,true)}}
+
+document.addEventListener('DOMContentLoaded',async()=>{
+ initSaleDefaults();setVal('payment_date',today());setVal('expense_date',today());resetPurchaseForm();
+ try{await loadAllForReports();await loadDashboard();await loadReminders()}catch(e){console.error(e)}
+});
+</script>
+</main>
+</body>
+</html>

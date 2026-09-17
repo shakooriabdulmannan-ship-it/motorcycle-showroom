@@ -1,19 +1,11 @@
-// MOTORCYCLE SHOWROOM - CLEAN INDEX.JS
-// Generated from the uploaded source. The Sales INSERT uses sale_date (not saleDate).
-
 const express = require("express");
 const mysql = require("mysql2/promise");
 const cors = require("cors");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
-
-// Reminder automation settings
-const N8N_REMINDER_WEBHOOK = String(process.env.N8N_REMINDER_WEBHOOK || "").trim();
-const REMINDER_CHECK_INTERVAL_MS = Math.max(5, Number(process.env.REMINDER_CHECK_INTERVAL_MINUTES) || 15) * 60 * 1000;
-const DEFAULT_REMINDER_DAYS = Math.max(0, Number(process.env.DEFAULT_REMINDER_DAYS) || 3);
-const DEFAULT_OVERDUE_ALERT_DAYS = Math.max(0, Number(process.env.DEFAULT_OVERDUE_ALERT_DAYS) || 1);
 
 // ======================================================
 // MIDDLEWARE
@@ -25,27 +17,25 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
 
 // ======================================================
 // MYSQL CONNECTION
 // ======================================================
 
 const db = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || "localhost",
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "motorcycle_showroom",
     port: Number(process.env.DB_PORT) || 3306,
-
-    ssl: {
-        rejectUnauthorized: false
-    },
 
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
-
 
 // ======================================================
 // HELPERS
@@ -107,7 +97,6 @@ function addMonths(dateString, months) {
         date.getMonth() + months
     );
 
-    // Handle month-end dates
     if (date.getDate() !== originalDay) {
         date.setDate(0);
     }
@@ -147,7 +136,6 @@ function buildInstallmentSchedule(
     return result;
 }
 
-
 // ======================================================
 // DATABASE SETUP
 // ======================================================
@@ -168,7 +156,6 @@ async function setupDatabase() {
         );
 
         connection.release();
-
 
         // =================================================
         // CUSTOMERS
@@ -203,7 +190,6 @@ async function setupDatabase() {
                     DEFAULT CURRENT_TIMESTAMP
             )
         `);
-
 
         // =================================================
         // MOTORCYCLES
@@ -250,7 +236,6 @@ async function setupDatabase() {
             )
         `);
 
-
         // ------------------------------------------------
         // OLD MOTORCYCLE TABLE MIGRATION
         // ------------------------------------------------
@@ -261,13 +246,11 @@ async function setupDatabase() {
             "VARCHAR(100) NULL"
         );
 
-
         await addColumnIfMissing(
             "motorcycles",
             "stock_status",
             "VARCHAR(30) NOT NULL DEFAULT 'In Stock'"
         );
-
 
         await addColumnIfMissing(
             "motorcycles",
@@ -275,15 +258,20 @@ async function setupDatabase() {
             "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         );
 
-
         await addColumnIfMissing(
             "motorcycles",
             "updated_at",
             "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
         );
 
+        await addColumnIfMissing(
+            "motorcycles",
+            "customer_id",
+            "INT NULL"
+        );
 
         // Copy old brand -> company
+
         const brandExists =
             await columnExists(
                 "motorcycles",
@@ -311,7 +299,6 @@ async function setupDatabase() {
                     AND brand IS NOT NULL
             `);
         }
-
 
         // =================================================
         // SALES
@@ -360,7 +347,6 @@ async function setupDatabase() {
             )
         `);
 
-
         // ------------------------------------------------
         // OLD SALES TABLE MIGRATION
         // ------------------------------------------------
@@ -371,13 +357,11 @@ async function setupDatabase() {
             "INT NULL"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "motorcycle_id",
             "INT NULL"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -385,13 +369,11 @@ async function setupDatabase() {
             "DATE NULL"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "sale_type",
             "VARCHAR(30) DEFAULT 'Cash'"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -399,13 +381,11 @@ async function setupDatabase() {
             "DECIMAL(12,2) DEFAULT 0"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "total_price",
             "DECIMAL(12,2) DEFAULT 0"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -413,13 +393,11 @@ async function setupDatabase() {
             "DECIMAL(12,2) DEFAULT 0"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "remaining_balance",
             "DECIMAL(12,2) DEFAULT 0"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -427,13 +405,11 @@ async function setupDatabase() {
             "INT NULL"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "installment_amount",
             "DECIMAL(12,2) NULL"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -441,13 +417,11 @@ async function setupDatabase() {
             "DATE NULL"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "reminder_days",
             "INT DEFAULT 3"
         );
-
 
         await addColumnIfMissing(
             "sales",
@@ -455,16 +429,14 @@ async function setupDatabase() {
             "VARCHAR(30) DEFAULT 'Active'"
         );
 
-
         await addColumnIfMissing(
             "sales",
             "created_at",
             "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         );
 
-
         // ------------------------------------------------
-        // KEEP OLD SALE PRICE DATA IN SYNC
+        // KEEP SALE PRICE DATA IN SYNC
         // ------------------------------------------------
 
         await db.query(`
@@ -477,7 +449,6 @@ async function setupDatabase() {
                 AND sale_price IS NOT NULL
         `);
 
-
         await db.query(`
             UPDATE sales
 
@@ -487,7 +458,6 @@ async function setupDatabase() {
                 (sale_price IS NULL OR sale_price = 0)
                 AND total_price IS NOT NULL
         `);
-
 
         // =================================================
         // INSTALLMENTS
@@ -530,7 +500,6 @@ async function setupDatabase() {
                     ON DELETE CASCADE
             )
         `);
-
 
         // =================================================
         // INSTALLMENT PAYMENTS
@@ -575,10 +544,9 @@ async function setupDatabase() {
             )
         `);
 
-
         // =================================================
         // SUPPLIERS
-        // Existing table is supported.
+        // FIX FOR /api/suppliers 404
         // =================================================
 
         await db.query(`
@@ -602,14 +570,14 @@ async function setupDatabase() {
 
                 notes TEXT,
 
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-
         // =================================================
         // PURCHASES
-        // Existing table is supported.
+        // FIX FOR /api/purchases 404
         // =================================================
 
         await db.query(`
@@ -623,51 +591,33 @@ async function setupDatabase() {
 
                 purchase_date DATE NOT NULL,
 
-                purchase_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+                purchase_price DECIMAL(12,2)
+                    NOT NULL DEFAULT 0,
 
-                payment_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+                payment_amount DECIMAL(12,2)
+                    NOT NULL DEFAULT 0,
 
-                remaining_balance DECIMAL(12,2) NOT NULL DEFAULT 0,
+                remaining_balance DECIMAL(12,2)
+                    NOT NULL DEFAULT 0,
 
-                payment_status VARCHAR(30) DEFAULT 'Paid',
+                payment_status VARCHAR(30)
+                    DEFAULT 'Paid',
 
-                payment_method VARCHAR(50) DEFAULT 'Cash',
+                payment_method VARCHAR(50)
+                    DEFAULT 'Cash',
 
                 invoice_number VARCHAR(100),
 
                 notes TEXT,
 
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP
             )
         `);
 
-
-        // Ensure expected columns exist for older databases.
-        await addColumnIfMissing('suppliers','alternate_phone','VARCHAR(30) NULL');
-        await addColumnIfMissing('suppliers','cnic','VARCHAR(30) NULL');
-        await addColumnIfMissing('suppliers','address','TEXT NULL');
-        await addColumnIfMissing('suppliers','city','VARCHAR(100) NULL');
-        await addColumnIfMissing('suppliers','company_name','VARCHAR(150) NULL');
-        await addColumnIfMissing('suppliers','notes','TEXT NULL');
-        await addColumnIfMissing('suppliers','created_at','TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
-
-        await addColumnIfMissing('purchases','supplier_id','INT NULL');
-        await addColumnIfMissing('purchases','motorcycle_id','INT NULL');
-        await addColumnIfMissing('purchases','purchase_date','DATE NULL');
-        await addColumnIfMissing('purchases','purchase_price','DECIMAL(12,2) DEFAULT 0');
-        await addColumnIfMissing('purchases','payment_amount','DECIMAL(12,2) DEFAULT 0');
-        await addColumnIfMissing('purchases','remaining_balance','DECIMAL(12,2) DEFAULT 0');
-        await addColumnIfMissing("purchases", "payment_status", "VARCHAR(30) DEFAULT 'Paid'");
-        await addColumnIfMissing("purchases", "payment_method", "VARCHAR(50) DEFAULT 'Cash'");
-        await addColumnIfMissing('purchases','invoice_number','VARCHAR(100) NULL');
-        await addColumnIfMissing('purchases','notes','TEXT NULL');
-        await addColumnIfMissing('purchases','created_at','TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
-
-
         // =================================================
         // EXPENSES
-        // Existing database table is supported.
-        // Missing columns are added safely if needed.
+        // FIX FOR /api/expenses 404
         // =================================================
 
         await db.query(`
@@ -679,17 +629,132 @@ async function setupDatabase() {
 
                 category VARCHAR(100) NOT NULL,
 
-                amount DECIMAL(12,2) NOT NULL,
+                amount DECIMAL(12,2)
+                    NOT NULL,
 
                 expense_date DATE NOT NULL,
 
-                payment_method VARCHAR(50) DEFAULT 'Cash',
+                payment_method VARCHAR(50)
+                    DEFAULT 'Cash',
 
                 description TEXT,
 
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // =================================================
+        // SAFE MIGRATION FOR OLD TABLES
+        // =================================================
+
+        await addColumnIfMissing(
+            "suppliers",
+            "alternate_phone",
+            "VARCHAR(30) NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "cnic",
+            "VARCHAR(30) NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "address",
+            "TEXT NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "city",
+            "VARCHAR(100) NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "company_name",
+            "VARCHAR(150) NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "notes",
+            "TEXT NULL"
+        );
+
+        await addColumnIfMissing(
+            "suppliers",
+            "created_at",
+            "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "supplier_id",
+            "INT NULL"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "motorcycle_id",
+            "INT NULL"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "purchase_date",
+            "DATE NULL"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "purchase_price",
+            "DECIMAL(12,2) DEFAULT 0"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "payment_amount",
+            "DECIMAL(12,2) DEFAULT 0"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "remaining_balance",
+            "DECIMAL(12,2) DEFAULT 0"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "payment_status",
+            "VARCHAR(30) DEFAULT 'Paid'"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "payment_method",
+            "VARCHAR(50) DEFAULT 'Cash'"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "invoice_number",
+            "VARCHAR(100) NULL"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "notes",
+            "TEXT NULL"
+        );
+
+        await addColumnIfMissing(
+            "purchases",
+            "created_at",
+            "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        );
 
         await addColumnIfMissing(
             "expenses",
@@ -702,19 +767,6 @@ async function setupDatabase() {
             "created_at",
             "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         );
-
-
-        await db.query(`
-            CREATE TABLE IF NOT EXISTS reminder_logs (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                installment_id INT NOT NULL,
-                reminder_type VARCHAR(40) NOT NULL,
-                reminder_date DATE NOT NULL,
-                payload JSON NULL,
-                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY uq_installment_reminder (installment_id, reminder_type, reminder_date)
-            ) ENGINE=InnoDB;
-        `);
 
         console.log(
             "Database tables checked successfully!"
@@ -730,7 +782,6 @@ async function setupDatabase() {
         throw error;
     }
 }
-
 
 // ======================================================
 // BASIC API
@@ -768,7 +819,6 @@ app.get("/api/health", async (req, res) => {
 
 });
 
-
 // ======================================================
 // CUSTOMERS
 // ======================================================
@@ -782,7 +832,6 @@ app.get(
             const search =
                 (req.query.search || "")
                     .trim();
-
 
             let sql = `
                 SELECT
@@ -801,9 +850,7 @@ app.get(
                 FROM customers
             `;
 
-
             const params = [];
-
 
             if (search) {
 
@@ -816,10 +863,8 @@ app.get(
                         OR city LIKE ?
                 `;
 
-
                 const like =
                     `%${search}%`;
-
 
                 params.push(
                     like,
@@ -830,18 +875,15 @@ app.get(
                 );
             }
 
-
             sql += `
                 ORDER BY id DESC
             `;
-
 
             const [customers] =
                 await db.query(
                     sql,
                     params
                 );
-
 
             res.json(customers);
 
@@ -851,7 +893,6 @@ app.get(
                 "Customers error:",
                 error
             );
-
 
             res.status(500).json({
                 success: false,
@@ -881,7 +922,6 @@ app.get(
                     [req.params.id]
                 );
 
-
             if (!rows.length) {
 
                 return res.status(404).json({
@@ -890,7 +930,6 @@ app.get(
                         "Customer nahi mila."
                 });
             }
-
 
             res.json(rows[0]);
 
@@ -907,12 +946,20 @@ app.get(
     }
 );
 
+// ======================================================
+// CUSTOMER + MOTORCYCLE SAVE
+// ======================================================
 
 app.post(
     "/api/customers",
     async (req, res) => {
 
+        const connection =
+            await db.getConnection();
+
         try {
+
+            await connection.beginTransaction();
 
             const {
                 customer_name,
@@ -924,14 +971,16 @@ app.post(
                 city,
                 occupation,
                 reference_name,
-                reference_phone
+                reference_phone,
+                motorcycle
             } = req.body;
-
 
             if (
                 !customer_name ||
                 !phone
             ) {
+
+                await connection.rollback();
 
                 return res.status(400).json({
                     success: false,
@@ -940,9 +989,8 @@ app.post(
                 });
             }
 
-
-            const [result] =
-                await db.query(
+            const [customerResult] =
+                await connection.query(
                     `
                     INSERT INTO customers
                     (
@@ -973,34 +1021,233 @@ app.post(
                     ]
                 );
 
+            const customerId =
+                customerResult.insertId;
+
+            let motorcycleId = null;
+
+            if (
+                motorcycle &&
+                typeof motorcycle === "object"
+            ) {
+
+                const {
+                    company,
+                    model,
+                    model_year,
+                    color,
+                    engine_number,
+                    chassis_number,
+                    registration_number,
+                    purchase_price,
+                    sale_price,
+                    purchase_date,
+                    notes
+                } = motorcycle;
+
+                const motorcycleFields = [
+                    company,
+                    model,
+                    model_year,
+                    color,
+                    engine_number,
+                    chassis_number,
+                    registration_number,
+                    purchase_price,
+                    sale_price,
+                    purchase_date,
+                    notes
+                ];
+
+                const hasMotorcycle =
+                    motorcycleFields.some(
+                        value =>
+                            value !== undefined &&
+                            value !== null &&
+                            String(value).trim() !== ""
+                    );
+
+                if (hasMotorcycle) {
+
+                    if (
+                        !company ||
+                        !model
+                    ) {
+
+                        await connection.rollback();
+
+                        return res.status(400).json({
+                            success: false,
+                            message:
+                                "Motorcycle save karne ke liye Company aur Model required hain."
+                        });
+                    }
+
+                    if (
+                        engine_number &&
+                        String(engine_number).trim() !== ""
+                    ) {
+
+                        const [engineRows] =
+                            await connection.query(
+                                `
+                                SELECT id
+                                FROM motorcycles
+                                WHERE engine_number = ?
+                                LIMIT 1
+                                `,
+                                [engine_number]
+                            );
+
+                        if (engineRows.length) {
+
+                            await connection.rollback();
+
+                            return res.status(400).json({
+                                success: false,
+                                message:
+                                    "Ye Engine Number pehle se mojood hai."
+                            });
+                        }
+                    }
+
+                    if (
+                        chassis_number &&
+                        String(chassis_number).trim() !== ""
+                    ) {
+
+                        const [chassisRows] =
+                            await connection.query(
+                                `
+                                SELECT id
+                                FROM motorcycles
+                                WHERE chassis_number = ?
+                                LIMIT 1
+                                `,
+                                [chassis_number]
+                            );
+
+                        if (chassisRows.length) {
+
+                            await connection.rollback();
+
+                            return res.status(400).json({
+                                success: false,
+                                message:
+                                    "Ye Chassis Number pehle se mojood hai."
+                            });
+                        }
+                    }
+
+                    const [motorcycleResult] =
+                        await connection.query(
+                            `
+                            INSERT INTO motorcycles
+                            (
+                                company,
+                                model,
+                                model_year,
+                                color,
+                                engine_number,
+                                chassis_number,
+                                registration_number,
+                                purchase_price,
+                                sale_price,
+                                stock_status,
+                                purchase_date,
+                                notes,
+                                customer_id
+                            )
+                            VALUES
+                            (?, ?, ?, ?, ?, ?, ?, ?, ?, 'In Stock', ?, ?, ?)
+                            `,
+                            [
+                                company,
+                                model,
+                                model_year || null,
+                                color || null,
+                                engine_number || null,
+                                chassis_number || null,
+                                registration_number || null,
+                                Number(purchase_price) || 0,
+                                Number(sale_price) || 0,
+                                purchase_date || null,
+                                notes || null,
+                                customerId
+                            ]
+                        );
+
+                    motorcycleId =
+                        motorcycleResult.insertId;
+                }
+            }
+
+            await connection.commit();
 
             res.status(201).json({
+
                 success: true,
+
                 message:
-                    "Customer successfully saved!",
+                    motorcycleId
+                        ? "Customer aur motorcycle successfully save ho gaye!"
+                        : "Customer successfully saved!",
+
                 customer_id:
-                    result.insertId
+                    customerId,
+
+                motorcycle_id:
+                    motorcycleId
+
             });
 
         } catch (error) {
+
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Rollback error:",
+                    rollbackError.message
+                );
+            }
 
             console.error(
                 "Customer save error:",
                 error
             );
 
+            if (
+                error.code ===
+                "ER_DUP_ENTRY"
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Engine Number ya Chassis Number already exists."
+                });
+            }
 
             res.status(500).json({
+
                 success: false,
+
                 message:
                     "Customer add nahi ho saka.",
-                error: error.message
+
+                error:
+                    error.message
+
             });
+
+        } finally {
+
+            connection.release();
         }
 
     }
 );
-
 
 // ======================================================
 // MOTORCYCLES
@@ -1015,7 +1262,6 @@ app.get(
             const search =
                 (req.query.search || "")
                     .trim();
-
 
             let sql = `
                 SELECT
@@ -1039,9 +1285,7 @@ app.get(
                 FROM motorcycles
             `;
 
-
             const params = [];
-
 
             if (search) {
 
@@ -1055,10 +1299,8 @@ app.get(
                         OR registration_number LIKE ?
                 `;
 
-
                 const like =
                     `%${search}%`;
-
 
                 params.push(
                     like,
@@ -1070,18 +1312,15 @@ app.get(
                 );
             }
 
-
             sql += `
                 ORDER BY id DESC
             `;
-
 
             const [motorcycles] =
                 await db.query(
                     sql,
                     params
                 );
-
 
             res.json(motorcycles);
 
@@ -1091,7 +1330,6 @@ app.get(
                 "Motorcycles error:",
                 error
             );
-
 
             res.status(500).json({
                 success: false,
@@ -1121,7 +1359,6 @@ app.get(
                     [req.params.id]
                 );
 
-
             if (!rows.length) {
 
                 return res.status(404).json({
@@ -1130,7 +1367,6 @@ app.get(
                         "Motorcycle nahi mili."
                 });
             }
-
 
             res.json(rows[0]);
 
@@ -1147,6 +1383,9 @@ app.get(
     }
 );
 
+// ======================================================
+// NEW STOCK / DIRECT MOTORCYCLE ADD
+// ======================================================
 
 app.post(
     "/api/motorcycles",
@@ -1169,7 +1408,6 @@ app.post(
                 notes
             } = req.body;
 
-
             if (!company || !model) {
 
                 return res.status(400).json({
@@ -1179,8 +1417,10 @@ app.post(
                 });
             }
 
-
-            if (engine_number) {
+            if (
+                engine_number &&
+                String(engine_number).trim() !== ""
+            ) {
 
                 const [rows] =
                     await db.query(
@@ -1193,7 +1433,6 @@ app.post(
                         [engine_number]
                     );
 
-
                 if (rows.length) {
 
                     return res.status(400).json({
@@ -1204,8 +1443,10 @@ app.post(
                 }
             }
 
-
-            if (chassis_number) {
+            if (
+                chassis_number &&
+                String(chassis_number).trim() !== ""
+            ) {
 
                 const [rows] =
                     await db.query(
@@ -1218,7 +1459,6 @@ app.post(
                         [chassis_number]
                     );
 
-
                 if (rows.length) {
 
                     return res.status(400).json({
@@ -1229,6 +1469,15 @@ app.post(
                 }
             }
 
+            const finalStockStatus =
+                stock_status &&
+                [
+                    "In Stock",
+                    "Reserved",
+                    "Sold"
+                ].includes(stock_status)
+                    ? stock_status
+                    : "In Stock";
 
             const [result] =
                 await db.query(
@@ -1249,7 +1498,8 @@ app.post(
                         notes
                     )
 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES
+                    (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `,
                     [
                         company,
@@ -1261,20 +1511,25 @@ app.post(
                         registration_number || null,
                         Number(purchase_price) || 0,
                         Number(sale_price) || 0,
-                        stock_status ||
-                            "In Stock",
+                        finalStockStatus,
                         purchase_date || null,
                         notes || null
                     ]
                 );
 
-
             res.status(201).json({
+
                 success: true,
+
                 message:
                     "Motorcycle successfully added!",
+
                 motorcycle_id:
-                    result.insertId
+                    result.insertId,
+
+                stock_status:
+                    finalStockStatus
+
             });
 
         } catch (error) {
@@ -1283,7 +1538,6 @@ app.post(
                 "Motorcycle save error:",
                 error
             );
-
 
             if (
                 error.code ===
@@ -1297,12 +1551,16 @@ app.post(
                 });
             }
 
-
             res.status(500).json({
+
                 success: false,
+
                 message:
                     "Motorcycle add nahi ho saki.",
-                error: error.message
+
+                error:
+                    error.message
+
             });
         }
 
@@ -1331,7 +1589,6 @@ app.put(
                 notes
             } = req.body;
 
-
             if (!company || !model) {
 
                 return res.status(400).json({
@@ -1340,7 +1597,6 @@ app.put(
                         "Company aur Model required hain."
                 });
             }
-
 
             const [result] =
                 await db.query(
@@ -1381,7 +1637,6 @@ app.put(
                     ]
                 );
 
-
             if (!result.affectedRows) {
 
                 return res.status(404).json({
@@ -1390,7 +1645,6 @@ app.put(
                         "Motorcycle nahi mili."
                 });
             }
-
 
             res.json({
                 success: true,
@@ -1404,7 +1658,6 @@ app.put(
                 "Motorcycle update error:",
                 error
             );
-
 
             res.status(500).json({
                 success: false,
@@ -1434,7 +1687,6 @@ app.delete(
                     [req.params.id]
                 );
 
-
             if (Number(sales[0].total) > 0) {
 
                 return res.status(400).json({
@@ -1443,7 +1695,6 @@ app.delete(
                         "Ye motorcycle sale ho chuki hai."
                 });
             }
-
 
             const [result] =
                 await db.query(
@@ -1454,7 +1705,6 @@ app.delete(
                     [req.params.id]
                 );
 
-
             if (!result.affectedRows) {
 
                 return res.status(404).json({
@@ -1463,7 +1713,6 @@ app.delete(
                         "Motorcycle nahi mili."
                 });
             }
-
 
             res.json({
                 success: true,
@@ -1483,7 +1732,6 @@ app.delete(
 
     }
 );
-
 
 // ======================================================
 // SALES
@@ -1534,7 +1782,6 @@ app.get(
                     ORDER BY s.id DESC
                 `);
 
-
             res.json(sales);
 
         } catch (error) {
@@ -1543,7 +1790,6 @@ app.get(
                 "Sales load error:",
                 error
             );
-
 
             res.status(500).json({
                 success: false,
@@ -1594,7 +1840,6 @@ app.get(
                     [req.params.id]
                 );
 
-
             if (!sales.length) {
 
                 return res.status(404).json({
@@ -1603,7 +1848,6 @@ app.get(
                         "Sale nahi mili."
                 });
             }
-
 
             const [installments] =
                 await db.query(
@@ -1618,7 +1862,6 @@ app.get(
                     `,
                     [req.params.id]
                 );
-
 
             res.json({
                 success: true,
@@ -1647,11 +1890,9 @@ app.post(
         const connection =
             await db.getConnection();
 
-
         try {
 
             await connection.beginTransaction();
-
 
             const {
                 customer_id,
@@ -1664,11 +1905,6 @@ app.post(
                 first_due_date,
                 reminder_days
             } = req.body;
-
-
-            // ------------------------------------------
-            // BASIC VALIDATION
-            // ------------------------------------------
 
             if (
                 !customer_id ||
@@ -1685,14 +1921,11 @@ app.post(
                 });
             }
 
-
             const total =
                 Number(total_price) || 0;
 
-
             const advance =
                 Number(advance_payment) || 0;
-
 
             if (total <= 0) {
 
@@ -1704,7 +1937,6 @@ app.post(
                         "Total sale price valid honi chahiye."
                 });
             }
-
 
             if (
                 advance < 0 ||
@@ -1720,17 +1952,11 @@ app.post(
                 });
             }
 
-
             const remaining =
                 Math.max(
                     0,
                     total - advance
                 );
-
-
-            // ------------------------------------------
-            // CUSTOMER CHECK
-            // ------------------------------------------
 
             const [customerRows] =
                 await connection.query(
@@ -1743,7 +1969,6 @@ app.post(
                     [customer_id]
                 );
 
-
             if (!customerRows.length) {
 
                 await connection.rollback();
@@ -1754,11 +1979,6 @@ app.post(
                         "Customer nahi mila."
                 });
             }
-
-
-            // ------------------------------------------
-            // MOTORCYCLE CHECK
-            // ------------------------------------------
 
             const [motorcycleRows] =
                 await connection.query(
@@ -1779,7 +1999,6 @@ app.post(
                     [motorcycle_id]
                 );
 
-
             if (!motorcycleRows.length) {
 
                 await connection.rollback();
@@ -1791,10 +2010,8 @@ app.post(
                 });
             }
 
-
             const motorcycle =
                 motorcycleRows[0];
-
 
             if (
                 motorcycle.stock_status !==
@@ -1810,26 +2027,16 @@ app.post(
                 });
             }
 
-
-            // ------------------------------------------
-            // SALE TYPE
-            // ------------------------------------------
-
             const type =
                 sale_type ===
                 "Installment"
                     ? "Installment"
                     : "Cash";
 
-
             let count = null;
-
             let monthlyAmount = null;
-
             let firstDue = null;
-
             let reminder = 3;
-
 
             if (
                 type ===
@@ -1839,14 +2046,11 @@ app.post(
                 count =
                     Number(installment_count) || 0;
 
-
                 firstDue =
                     first_due_date || null;
 
-
                 reminder =
                     Number(reminder_days);
-
 
                 if (
                     reminder !== 0 &&
@@ -1854,7 +2058,6 @@ app.post(
                 ) {
                     reminder = 3;
                 }
-
 
                 if (count <= 0) {
 
@@ -1867,7 +2070,6 @@ app.post(
                     });
                 }
 
-
                 if (!firstDue) {
 
                     await connection.rollback();
@@ -1879,15 +2081,9 @@ app.post(
                     });
                 }
 
-
                 monthlyAmount =
                     remaining / count;
             }
-
-
-            // ------------------------------------------
-            // INSERT SALE
-            // ------------------------------------------
 
             const [saleResult] =
                 await connection.query(
@@ -1929,14 +2125,8 @@ app.post(
                     ]
                 );
 
-
             const saleId =
                 saleResult.insertId;
-
-
-            // ------------------------------------------
-            // INSTALLMENT SCHEDULE
-            // ------------------------------------------
 
             if (
                 type ===
@@ -1949,7 +2139,6 @@ app.post(
                         count,
                         monthlyAmount
                     );
-
 
                 for (
                     const item
@@ -1980,25 +2169,20 @@ app.post(
                 }
             }
 
-
-            // ------------------------------------------
-            // MARK MOTORCYCLE SOLD
-            // ------------------------------------------
-
             await connection.query(
                 `
                 UPDATE motorcycles
 
                 SET stock_status = 'Sold'
 
-                WHERE id = ?
+                WHERE
+                    id = ?
+                    AND stock_status = 'In Stock'
                 `,
                 [motorcycle_id]
             );
 
-
             await connection.commit();
-
 
             res.status(201).json({
 
@@ -2018,16 +2202,21 @@ app.post(
 
             });
 
-
         } catch (error) {
 
-            await connection.rollback();
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Rollback error:",
+                    rollbackError.message
+                );
+            }
 
             console.error(
                 "Sale create error:",
                 error
             );
-
 
             res.status(500).json({
 
@@ -2048,202 +2237,6 @@ app.post(
 
     }
 );
-
-
-
-// ======================================================
-// INSTALLMENT REMINDER AUTOMATION
-// ======================================================
-
-function localTodayISO() {
-    const d = new Date();
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 10);
-}
-
-function daysBetween(dateA, dateB) {
-    const a = new Date(`${dateA}T00:00:00`);
-    const b = new Date(`${dateB}T00:00:00`);
-    return Math.round((a.getTime() - b.getTime()) / 86400000);
-}
-
-async function fetchReminderRows() {
-    const [rows] = await db.query(`
-        SELECT
-            i.id AS installment_id,
-            i.sale_id,
-            i.installment_number,
-            i.due_date,
-            i.amount,
-            i.paid_amount,
-            i.status,
-            COALESCE(s.reminder_days, ?) AS reminder_days,
-            s.remaining_balance AS sale_remaining_balance,
-            c.customer_name,
-            c.phone,
-            c.alternate_phone,
-            c.cnic,
-            m.company,
-            m.model,
-            m.engine_number
-        FROM installments i
-        INNER JOIN sales s ON s.id = i.sale_id
-        INNER JOIN customers c ON c.id = s.customer_id
-        INNER JOIN motorcycles m ON m.id = s.motorcycle_id
-        WHERE i.status IN ('Pending','Partial')
-        ORDER BY i.due_date ASC, i.installment_number ASC
-    `, [DEFAULT_REMINDER_DAYS]);
-    return rows;
-}
-
-function classifyReminder(row, today) {
-    const dueDate = String(row.due_date).slice(0, 10);
-    const daysUntilDue = daysBetween(dueDate, today);
-    const reminderDays = Math.max(0, Number(row.reminder_days) || DEFAULT_REMINDER_DAYS);
-
-    if (daysUntilDue === reminderDays) {
-        return {
-            type: 'upcoming',
-            title: `Installment due in ${reminderDays} day${reminderDays === 1 ? '' : 's'}`,
-            daysUntilDue
-        };
-    }
-
-    if (daysUntilDue === 0) {
-        return { type: 'due_today', title: 'Installment due today', daysUntilDue };
-    }
-
-    if (daysUntilDue < 0 && Math.abs(daysUntilDue) === DEFAULT_OVERDUE_ALERT_DAYS) {
-        const n = Math.abs(daysUntilDue);
-        return {
-            type: 'overdue',
-            title: `Installment overdue by ${n} day${n === 1 ? '' : 's'}`,
-            daysUntilDue
-        };
-    }
-
-    return null;
-}
-
-async function processReminderAutomation() {
-    const today = localTodayISO();
-    const rows = await fetchReminderRows();
-    let processed = 0;
-
-    for (const row of rows) {
-        const classification = classifyReminder(row, today);
-        if (!classification) continue;
-
-        const outstandingAmount = Math.max(
-            0,
-            (Number(row.amount) || 0) - (Number(row.paid_amount) || 0)
-        );
-
-        const payload = {
-            event: 'installment_reminder',
-            reminder_type: classification.type,
-            title: classification.title,
-            reminder_date: today,
-            installment_id: row.installment_id,
-            sale_id: row.sale_id,
-            installment_number: row.installment_number,
-            due_date: String(row.due_date).slice(0, 10),
-            days_until_due: classification.daysUntilDue,
-            installment_amount: Number(row.amount) || 0,
-            paid_amount: Number(row.paid_amount) || 0,
-            outstanding_amount: outstandingAmount,
-            sale_remaining_balance: Number(row.sale_remaining_balance) || 0,
-            customer: {
-                name: row.customer_name,
-                phone: row.phone,
-                alternate_phone: row.alternate_phone,
-                cnic: row.cnic
-            },
-            motorcycle: {
-                company: row.company,
-                model: row.model,
-                engine_number: row.engine_number
-            }
-        };
-
-        const [existing] = await db.query(`
-            SELECT id
-            FROM reminder_logs
-            WHERE installment_id = ?
-              AND reminder_type = ?
-              AND reminder_date = ?
-            LIMIT 1
-        `, [row.installment_id, classification.type, today]);
-
-        if (existing.length) continue;
-
-        let deliveredToN8n = false;
-
-        if (N8N_REMINDER_WEBHOOK) {
-            try {
-                const response = await fetch(N8N_REMINDER_WEBHOOK, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                deliveredToN8n = response.ok;
-
-                if (!response.ok) {
-                    const text = await response.text().catch(() => '');
-                    console.error('n8n reminder webhook failed:', response.status, text);
-                }
-            } catch (error) {
-                console.error('n8n reminder webhook error:', error.message);
-            }
-        } else {
-            console.log('Reminder ready (configure N8N_REMINDER_WEBHOOK):', JSON.stringify(payload));
-            deliveredToN8n = false;
-        }
-
-        if (deliveredToN8n) {
-            await db.query(`
-                INSERT INTO reminder_logs
-                (installment_id, reminder_type, reminder_date, payload)
-                VALUES (?, ?, ?, ?)
-            `, [
-                row.installment_id,
-                classification.type,
-                today,
-                JSON.stringify(payload)
-            ]);
-            processed++;
-        }
-    }
-
-    if (processed) {
-        console.log(`Reminder automation processed ${processed} reminder(s).`);
-    }
-
-    return processed;
-}
-
-app.get('/api/reminders/check', async (req, res) => {
-    try {
-        const processed = await processReminderAutomation();
-        res.json({ success: true, processed, checked_at: new Date().toISOString() });
-    } catch (error) {
-        console.error('Reminder check error:', error);
-        res.status(500).json({ success: false, message: 'Reminder check nahi ho saka.', error: error.message });
-    }
-});
-
-app.get('/api/reminders/logs', async (req, res) => {
-    try {
-        const [rows] = await db.query(`
-            SELECT * FROM reminder_logs
-            ORDER BY sent_at DESC
-            LIMIT 200
-        `);
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Reminder logs load nahi ho saken.', error: error.message });
-    }
-});
 
 // ======================================================
 // INSTALLMENTS
@@ -2286,7 +2279,6 @@ app.get(
                         i.due_date ASC,
                         i.installment_number ASC
                 `);
-
 
             res.json(rows);
 
@@ -2347,7 +2339,6 @@ app.get(
                         i.due_date ASC
                 `);
 
-
             res.json(rows);
 
         } catch (error) {
@@ -2407,7 +2398,6 @@ app.get(
                         i.due_date ASC
                 `);
 
-
             res.json(rows);
 
         } catch (error) {
@@ -2423,7 +2413,6 @@ app.get(
     }
 );
 
-
 // ======================================================
 // INSTALLMENT PAYMENT
 // ======================================================
@@ -2435,11 +2424,9 @@ app.post(
         const connection =
             await db.getConnection();
 
-
         try {
 
             await connection.beginTransaction();
-
 
             const {
                 installment_id,
@@ -2449,10 +2436,8 @@ app.post(
                 notes
             } = req.body;
 
-
             const paymentAmount =
                 Number(amount) || 0;
-
 
             if (
                 !installment_id ||
@@ -2468,7 +2453,6 @@ app.post(
                 });
             }
 
-
             const [rows] =
                 await connection.query(
                     `
@@ -2483,7 +2467,6 @@ app.post(
                     [installment_id]
                 );
 
-
             if (!rows.length) {
 
                 await connection.rollback();
@@ -2495,10 +2478,8 @@ app.post(
                 });
             }
 
-
             const installment =
                 rows[0];
-
 
             const pendingAmount =
                 Number(
@@ -2507,7 +2488,6 @@ app.post(
                 Number(
                     installment.paid_amount
                 );
-
 
             if (
                 paymentAmount >
@@ -2523,13 +2503,11 @@ app.post(
                 });
             }
 
-
             const newPaidAmount =
                 Number(
                     installment.paid_amount
                 ) +
                 paymentAmount;
-
 
             const fullyPaid =
                 newPaidAmount >=
@@ -2537,12 +2515,10 @@ app.post(
                     installment.amount
                 );
 
-
             const newStatus =
                 fullyPaid
                     ? "Paid"
                     : "Partial";
-
 
             const paidDate =
                 payment_date ||
@@ -2550,8 +2526,6 @@ app.post(
                     .toISOString()
                     .split("T")[0];
 
-
-            // PAYMENT HISTORY
             await connection.query(
                 `
                 INSERT INTO installment_payments
@@ -2577,8 +2551,6 @@ app.post(
                 ]
             );
 
-
-            // UPDATE INSTALLMENT
             await connection.query(
                 `
                 UPDATE installments
@@ -2600,8 +2572,6 @@ app.post(
                 ]
             );
 
-
-            // UPDATE SALE BALANCE
             await connection.query(
                 `
                 UPDATE sales
@@ -2621,8 +2591,6 @@ app.post(
                 ]
             );
 
-
-            // COMPLETED
             await connection.query(
                 `
                 UPDATE sales
@@ -2637,9 +2605,7 @@ app.post(
                 [installment.sale_id]
             );
 
-
             await connection.commit();
-
 
             res.status(201).json({
 
@@ -2653,16 +2619,21 @@ app.post(
 
             });
 
-
         } catch (error) {
 
-            await connection.rollback();
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Rollback error:",
+                    rollbackError.message
+                );
+            }
 
             console.error(
                 "Installment payment error:",
                 error
             );
-
 
             res.status(500).json({
 
@@ -2683,7 +2654,6 @@ app.post(
 
     }
 );
-
 
 // ======================================================
 // PAYMENT HISTORY
@@ -2711,7 +2681,6 @@ app.get(
                     [req.params.saleId]
                 );
 
-
             res.json(rows);
 
         } catch (error) {
@@ -2727,580 +2696,1007 @@ app.get(
     }
 );
 
-
 // ======================================================
 // SUPPLIERS
 // ======================================================
+// FIX: /api/suppliers 404
+// ======================================================
 
-app.get('/api/suppliers', async (req, res) => {
-    try {
-        const search = (req.query.search || '').trim();
-        let sql = `
-            SELECT
-                id, supplier_name, phone, alternate_phone, cnic,
-                address, city, company_name, notes, created_at
-            FROM suppliers
-        `;
-        const params = [];
+app.get(
+    "/api/suppliers",
+    async (req, res) => {
 
-        if (search) {
-            sql += `
-                WHERE
-                    supplier_name LIKE ?
-                    OR phone LIKE ?
-                    OR cnic LIKE ?
-                    OR city LIKE ?
-                    OR company_name LIKE ?
+        try {
+
+            const search =
+                (req.query.search || "")
+                    .trim();
+
+            let sql = `
+                SELECT
+                    id,
+                    supplier_name,
+                    phone,
+                    alternate_phone,
+                    cnic,
+                    address,
+                    city,
+                    company_name,
+                    notes,
+                    created_at
+                FROM suppliers
             `;
-            const like = `%${search}%`;
-            params.push(like, like, like, like, like);
+
+            const params = [];
+
+            if (search) {
+
+                sql += `
+                    WHERE
+                        supplier_name LIKE ?
+                        OR phone LIKE ?
+                        OR cnic LIKE ?
+                        OR city LIKE ?
+                        OR company_name LIKE ?
+                `;
+
+                const like =
+                    `%${search}%`;
+
+                params.push(
+                    like,
+                    like,
+                    like,
+                    like,
+                    like
+                );
+            }
+
+            sql += `
+                ORDER BY id DESC
+            `;
+
+            const [rows] =
+                await db.query(
+                    sql,
+                    params
+                );
+
+            res.json(rows);
+
+        } catch (error) {
+
+            console.error(
+                "Suppliers load error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Suppliers load nahi ho sake.",
+                error: error.message
+            });
         }
 
-        sql += ' ORDER BY id DESC';
-        const [rows] = await db.query(sql, params);
-        res.json(rows);
-    } catch (error) {
-        console.error('Suppliers load error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Suppliers load nahi ho sake.',
-            error: error.message
-        });
     }
-});
+);
 
-app.get('/api/suppliers/:id', async (req, res) => {
-    try {
-        const [rows] = await db.query(
-            'SELECT * FROM suppliers WHERE id = ?',
-            [req.params.id]
-        );
 
-        if (!rows.length) {
-            return res.status(404).json({
+app.get(
+    "/api/suppliers/:id",
+    async (req, res) => {
+
+        try {
+
+            const [rows] =
+                await db.query(
+                    `
+                    SELECT *
+                    FROM suppliers
+                    WHERE id = ?
+                    `,
+                    [req.params.id]
+                );
+
+            if (!rows.length) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Supplier nahi mila."
+                });
+            }
+
+            res.json(rows[0]);
+
+        } catch (error) {
+
+            res.status(500).json({
                 success: false,
-                message: 'Supplier nahi mila.'
+                message:
+                    "Supplier load nahi ho saka.",
+                error: error.message
             });
         }
 
-        res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Supplier load nahi ho saka.',
-            error: error.message
-        });
     }
-});
+);
 
-app.post('/api/suppliers', async (req, res) => {
-    try {
-        const {
-            supplier_name, phone, alternate_phone, cnic,
-            address, city, company_name, notes
-        } = req.body;
 
-        if (!supplier_name || !String(supplier_name).trim()) {
-            return res.status(400).json({
+app.post(
+    "/api/suppliers",
+    async (req, res) => {
+
+        try {
+
+            const {
+                supplier_name,
+                phone,
+                alternate_phone,
+                cnic,
+                address,
+                city,
+                company_name,
+                notes
+            } = req.body;
+
+            if (
+                !supplier_name ||
+                !String(supplier_name).trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Supplier name required hai."
+                });
+            }
+
+            const [result] =
+                await db.query(
+                    `
+                    INSERT INTO suppliers
+                    (
+                        supplier_name,
+                        phone,
+                        alternate_phone,
+                        cnic,
+                        address,
+                        city,
+                        company_name,
+                        notes
+                    )
+
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    `,
+                    [
+                        String(supplier_name).trim(),
+                        phone?.trim() || null,
+                        alternate_phone?.trim() || null,
+                        cnic?.trim() || null,
+                        address?.trim() || null,
+                        city?.trim() || null,
+                        company_name?.trim() || null,
+                        notes?.trim() || null
+                    ]
+                );
+
+            res.status(201).json({
+                success: true,
+                message:
+                    "Supplier successfully saved!",
+                supplier_id:
+                    result.insertId
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Supplier save error:",
+                error
+            );
+
+            res.status(500).json({
                 success: false,
-                message: 'Supplier name required hai.'
+                message:
+                    "Supplier save nahi ho saka.",
+                error: error.message
             });
         }
 
-        const [result] = await db.query(
-            `
-            INSERT INTO suppliers
-            (supplier_name, phone, alternate_phone, cnic, address, city, company_name, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `,
-            [
-                String(supplier_name).trim(),
-                phone?.trim() || null,
-                alternate_phone?.trim() || null,
-                cnic?.trim() || null,
-                address?.trim() || null,
-                city?.trim() || null,
-                company_name?.trim() || null,
-                notes?.trim() || null
-            ]
-        );
-
-        res.status(201).json({
-            success: true,
-            message: 'Supplier successfully saved!',
-            supplier_id: result.insertId
-        });
-    } catch (error) {
-        console.error('Supplier save error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Supplier save nahi ho saka.',
-            error: error.message
-        });
     }
-});
+);
 
-app.put('/api/suppliers/:id', async (req, res) => {
-    try {
-        const {
-            supplier_name, phone, alternate_phone, cnic,
-            address, city, company_name, notes
-        } = req.body;
 
-        if (!supplier_name || !String(supplier_name).trim()) {
-            return res.status(400).json({
+app.put(
+    "/api/suppliers/:id",
+    async (req, res) => {
+
+        try {
+
+            const {
+                supplier_name,
+                phone,
+                alternate_phone,
+                cnic,
+                address,
+                city,
+                company_name,
+                notes
+            } = req.body;
+
+            if (
+                !supplier_name ||
+                !String(supplier_name).trim()
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Supplier name required hai."
+                });
+            }
+
+            const [result] =
+                await db.query(
+                    `
+                    UPDATE suppliers
+
+                    SET
+                        supplier_name = ?,
+                        phone = ?,
+                        alternate_phone = ?,
+                        cnic = ?,
+                        address = ?,
+                        city = ?,
+                        company_name = ?,
+                        notes = ?
+
+                    WHERE id = ?
+                    `,
+                    [
+                        String(supplier_name).trim(),
+                        phone?.trim() || null,
+                        alternate_phone?.trim() || null,
+                        cnic?.trim() || null,
+                        address?.trim() || null,
+                        city?.trim() || null,
+                        company_name?.trim() || null,
+                        notes?.trim() || null,
+                        req.params.id
+                    ]
+                );
+
+            if (!result.affectedRows) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Supplier nahi mila."
+                });
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Supplier successfully updated!"
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Supplier update error:",
+                error
+            );
+
+            res.status(500).json({
                 success: false,
-                message: 'Supplier name required hai.'
+                message:
+                    "Supplier update nahi ho saka.",
+                error: error.message
             });
         }
 
-        const [result] = await db.query(
-            `
-            UPDATE suppliers SET
-                supplier_name = ?,
-                phone = ?,
-                alternate_phone = ?,
-                cnic = ?,
-                address = ?,
-                city = ?,
-                company_name = ?,
-                notes = ?
-            WHERE id = ?
-            `,
-            [
-                String(supplier_name).trim(),
-                phone?.trim() || null,
-                alternate_phone?.trim() || null,
-                cnic?.trim() || null,
-                address?.trim() || null,
-                city?.trim() || null,
-                company_name?.trim() || null,
-                notes?.trim() || null,
-                req.params.id
-            ]
-        );
-
-        if (!result.affectedRows) {
-            return res.status(404).json({
-                success: false,
-                message: 'Supplier nahi mila.'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Supplier successfully updated!'
-        });
-    } catch (error) {
-        console.error('Supplier update error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Supplier update nahi ho saka.',
-            error: error.message
-        });
     }
-});
+);
 
-app.delete('/api/suppliers/:id', async (req, res) => {
-    try {
-        const [purchaseRows] = await db.query(
-            'SELECT COUNT(*) AS total FROM purchases WHERE supplier_id = ?',
-            [req.params.id]
-        );
 
-        if (Number(purchaseRows[0].total) > 0) {
-            return res.status(400).json({
+app.delete(
+    "/api/suppliers/:id",
+    async (req, res) => {
+
+        try {
+
+            const [purchaseRows] =
+                await db.query(
+                    `
+                    SELECT COUNT(*) AS total
+                    FROM purchases
+                    WHERE supplier_id = ?
+                    `,
+                    [req.params.id]
+                );
+
+            if (
+                Number(
+                    purchaseRows[0].total
+                ) > 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Is supplier ki purchases mojood hain, is liye delete nahi ho sakta."
+                });
+            }
+
+            const [result] =
+                await db.query(
+                    `
+                    DELETE FROM suppliers
+                    WHERE id = ?
+                    `,
+                    [req.params.id]
+                );
+
+            if (!result.affectedRows) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Supplier nahi mila."
+                });
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Supplier successfully deleted!"
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Supplier delete error:",
+                error
+            );
+
+            res.status(500).json({
                 success: false,
-                message: 'Is supplier ki purchases mojood hain, is liye delete nahi ho sakta.'
+                message:
+                    "Supplier delete nahi ho saka.",
+                error: error.message
             });
         }
 
-        const [result] = await db.query(
-            'DELETE FROM suppliers WHERE id = ?',
-            [req.params.id]
-        );
-
-        if (!result.affectedRows) {
-            return res.status(404).json({
-                success: false,
-                message: 'Supplier nahi mila.'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Supplier successfully deleted!'
-        });
-    } catch (error) {
-        console.error('Supplier delete error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Supplier delete nahi ho saka.',
-            error: error.message
-        });
     }
-});
-
+);
 
 // ======================================================
 // PURCHASES
 // ======================================================
+// FIX: /api/purchases 404
+// ======================================================
 
-app.get('/api/purchases', async (req, res) => {
-    try {
-        const search = (req.query.search || '').trim();
+app.get(
+    "/api/purchases",
+    async (req, res) => {
 
-        let sql = `
-            SELECT
-                p.id,
-                p.supplier_id,
-                p.motorcycle_id,
-                p.purchase_date,
-                p.purchase_price,
-                p.payment_amount,
-                p.remaining_balance,
-                p.payment_status,
-                p.payment_method,
-                p.invoice_number,
-                p.notes,
-                p.created_at,
-                s.supplier_name,
-                s.phone AS supplier_phone,
-                m.company,
-                m.model,
-                m.engine_number,
-                m.chassis_number
-            FROM purchases p
-            LEFT JOIN suppliers s ON s.id = p.supplier_id
-            LEFT JOIN motorcycles m ON m.id = p.motorcycle_id
-        `;
+        try {
 
-        const params = [];
+            const search =
+                (req.query.search || "")
+                    .trim();
 
-        if (search) {
-            sql += `
-                WHERE
-                    s.supplier_name LIKE ?
-                    OR m.company LIKE ?
-                    OR m.model LIKE ?
-                    OR m.engine_number LIKE ?
-                    OR p.invoice_number LIKE ?
-                    OR p.payment_status LIKE ?
+            let sql = `
+                SELECT
+
+                    p.id,
+                    p.supplier_id,
+                    p.motorcycle_id,
+                    p.purchase_date,
+                    p.purchase_price,
+                    p.payment_amount,
+                    p.remaining_balance,
+                    p.payment_status,
+                    p.payment_method,
+                    p.invoice_number,
+                    p.notes,
+                    p.created_at,
+
+                    s.supplier_name,
+                    s.phone AS supplier_phone,
+
+                    m.company,
+                    m.model,
+                    m.engine_number,
+                    m.chassis_number
+
+                FROM purchases p
+
+                LEFT JOIN suppliers s
+                    ON s.id = p.supplier_id
+
+                LEFT JOIN motorcycles m
+                    ON m.id = p.motorcycle_id
             `;
-            const like = `%${search}%`;
-            params.push(like, like, like, like, like, like);
-        }
 
-        sql += ' ORDER BY p.id DESC';
+            const params = [];
 
-        const [rows] = await db.query(sql, params);
-        res.json(rows);
-    } catch (error) {
-        console.error('Purchases load error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Purchases load nahi ho sakin.',
-            error: error.message
-        });
-    }
-});
+            if (search) {
 
-app.get('/api/purchases/:id', async (req, res) => {
-    try {
-        const [rows] = await db.query(
-            `
-            SELECT
-                p.*,
-                s.supplier_name, s.phone AS supplier_phone,
-                m.company, m.model, m.engine_number, m.chassis_number
-            FROM purchases p
-            LEFT JOIN suppliers s ON s.id = p.supplier_id
-            LEFT JOIN motorcycles m ON m.id = p.motorcycle_id
-            WHERE p.id = ?
-            `,
-            [req.params.id]
-        );
+                sql += `
+                    WHERE
+                        s.supplier_name LIKE ?
+                        OR m.company LIKE ?
+                        OR m.model LIKE ?
+                        OR m.engine_number LIKE ?
+                        OR p.invoice_number LIKE ?
+                        OR p.payment_status LIKE ?
+                `;
 
-        if (!rows.length) {
-            return res.status(404).json({
-                success: false,
-                message: 'Purchase nahi mili.'
-            });
-        }
+                const like =
+                    `%${search}%`;
 
-        res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Purchase load nahi ho saki.',
-            error: error.message
-        });
-    }
-});
+                params.push(
+                    like,
+                    like,
+                    like,
+                    like,
+                    like,
+                    like
+                );
+            }
 
-app.post('/api/purchases', async (req, res) => {
-    const connection = await db.getConnection();
+            sql += `
+                ORDER BY p.id DESC
+            `;
 
-    try {
-        await connection.beginTransaction();
+            const [rows] =
+                await db.query(
+                    sql,
+                    params
+                );
 
-        const {
-            supplier_id,
-            motorcycle_id,
-            purchase_date,
-            purchase_price,
-            payment_amount,
-            payment_method,
-            invoice_number,
-            notes
-        } = req.body;
+            res.json(rows);
 
-        if (!purchase_date) {
-            await connection.rollback();
-            return res.status(400).json({
-                success: false,
-                message: 'Purchase date required hai.'
-            });
-        }
+        } catch (error) {
 
-        const purchasePrice = Number(purchase_price) || 0;
-        const paymentAmount = Number(payment_amount) || 0;
-
-        if (purchasePrice <= 0) {
-            await connection.rollback();
-            return res.status(400).json({
-                success: false,
-                message: 'Purchase price valid honi chahiye.'
-            });
-        }
-
-        if (paymentAmount < 0 || paymentAmount > purchasePrice) {
-            await connection.rollback();
-            return res.status(400).json({
-                success: false,
-                message: 'Payment amount purchase price se zyada nahi ho sakta.'
-            });
-        }
-
-        const remaining = Math.max(0, purchasePrice - paymentAmount);
-        const paymentStatus = remaining <= 0 ? 'Paid' : (paymentAmount > 0 ? 'Partial' : 'Unpaid');
-
-        if (supplier_id) {
-            const [supplierRows] = await connection.query(
-                'SELECT id FROM suppliers WHERE id = ? FOR UPDATE',
-                [supplier_id]
+            console.error(
+                "Purchases load error:",
+                error
             );
-            if (!supplierRows.length) {
-                await connection.rollback();
-                return res.status(400).json({
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Purchases load nahi ho sakin.",
+                error: error.message
+            });
+        }
+
+    }
+);
+
+
+app.get(
+    "/api/purchases/:id",
+    async (req, res) => {
+
+        try {
+
+            const [rows] =
+                await db.query(
+                    `
+                    SELECT
+
+                        p.*,
+
+                        s.supplier_name,
+                        s.phone AS supplier_phone,
+
+                        m.company,
+                        m.model,
+                        m.engine_number,
+                        m.chassis_number
+
+                    FROM purchases p
+
+                    LEFT JOIN suppliers s
+                        ON s.id = p.supplier_id
+
+                    LEFT JOIN motorcycles m
+                        ON m.id = p.motorcycle_id
+
+                    WHERE p.id = ?
+                    `,
+                    [req.params.id]
+                );
+
+            if (!rows.length) {
+
+                return res.status(404).json({
                     success: false,
-                    message: 'Supplier nahi mila.'
+                    message:
+                        "Purchase nahi mili."
                 });
             }
+
+            res.json(rows[0]);
+
+        } catch (error) {
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Purchase load nahi ho saki.",
+                error: error.message
+            });
         }
 
-        if (motorcycle_id) {
-            const [motorcycleRows] = await connection.query(
-                `
-                SELECT id, company, model, stock_status
-                FROM motorcycles
-                WHERE id = ?
-                FOR UPDATE
-                `,
-                [motorcycle_id]
-            );
+    }
+);
 
-            if (!motorcycleRows.length) {
+
+app.post(
+    "/api/purchases",
+    async (req, res) => {
+
+        const connection =
+            await db.getConnection();
+
+        try {
+
+            await connection.beginTransaction();
+
+            const {
+                supplier_id,
+                motorcycle_id,
+                purchase_date,
+                purchase_price,
+                payment_amount,
+                payment_method,
+                invoice_number,
+                notes
+            } = req.body;
+
+            if (!purchase_date) {
+
                 await connection.rollback();
+
                 return res.status(400).json({
                     success: false,
-                    message: 'Motorcycle nahi mili.'
+                    message:
+                        "Purchase date required hai."
                 });
             }
-        }
 
-        const [result] = await connection.query(
-            `
-            INSERT INTO purchases
-            (supplier_id, motorcycle_id, purchase_date, purchase_price,
-             payment_amount, remaining_balance, payment_status,
-             payment_method, invoice_number, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `,
-            [
-                supplier_id || null,
-                motorcycle_id || null,
-                purchase_date,
-                purchasePrice,
-                paymentAmount,
-                remaining,
-                paymentStatus,
-                payment_method || 'Cash',
-                invoice_number?.trim() || null,
-                notes?.trim() || null
-            ]
-        );
+            const purchasePrice =
+                Number(purchase_price) || 0;
 
-        if (motorcycle_id) {
-            await connection.query(
-                `
-                UPDATE motorcycles
-                SET purchase_price = ?,
-                    purchase_date = ?,
-                    stock_status = CASE
-                        WHEN stock_status = 'Sold' THEN stock_status
-                        ELSE 'In Stock'
-                    END
-                WHERE id = ?
-                `,
-                [purchasePrice, purchase_date, motorcycle_id]
+            const paymentAmount =
+                Number(payment_amount) || 0;
+
+            if (purchasePrice <= 0) {
+
+                await connection.rollback();
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Purchase price valid honi chahiye."
+                });
+            }
+
+            if (
+                paymentAmount < 0 ||
+                paymentAmount > purchasePrice
+            ) {
+
+                await connection.rollback();
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Payment amount purchase price se zyada nahi ho sakta."
+                });
+            }
+
+            const remaining =
+                Math.max(
+                    0,
+                    purchasePrice - paymentAmount
+                );
+
+            const paymentStatus =
+                remaining <= 0
+                    ? "Paid"
+                    : paymentAmount > 0
+                        ? "Partial"
+                        : "Unpaid";
+
+            if (supplier_id) {
+
+                const [supplierRows] =
+                    await connection.query(
+                        `
+                        SELECT id
+                        FROM suppliers
+                        WHERE id = ?
+                        FOR UPDATE
+                        `,
+                        [supplier_id]
+                    );
+
+                if (!supplierRows.length) {
+
+                    await connection.rollback();
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Supplier nahi mila."
+                    });
+                }
+            }
+
+            if (motorcycle_id) {
+
+                const [motorcycleRows] =
+                    await connection.query(
+                        `
+                        SELECT
+                            id,
+                            company,
+                            model,
+                            stock_status
+
+                        FROM motorcycles
+
+                        WHERE id = ?
+
+                        FOR UPDATE
+                        `,
+                        [motorcycle_id]
+                    );
+
+                if (!motorcycleRows.length) {
+
+                    await connection.rollback();
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Motorcycle nahi mili."
+                    });
+                }
+            }
+
+            const [result] =
+                await connection.query(
+                    `
+                    INSERT INTO purchases
+                    (
+                        supplier_id,
+                        motorcycle_id,
+                        purchase_date,
+                        purchase_price,
+                        payment_amount,
+                        remaining_balance,
+                        payment_status,
+                        payment_method,
+                        invoice_number,
+                        notes
+                    )
+
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `,
+                    [
+                        supplier_id || null,
+                        motorcycle_id || null,
+                        purchase_date,
+                        purchasePrice,
+                        paymentAmount,
+                        remaining,
+                        paymentStatus,
+                        payment_method || "Cash",
+                        invoice_number?.trim() || null,
+                        notes?.trim() || null
+                    ]
+                );
+
+            if (motorcycle_id) {
+
+                await connection.query(
+                    `
+                    UPDATE motorcycles
+
+                    SET
+                        purchase_price = ?,
+                        purchase_date = ?,
+                        stock_status = CASE
+                            WHEN stock_status = 'Sold'
+                                THEN stock_status
+                            ELSE 'In Stock'
+                        END
+
+                    WHERE id = ?
+                    `,
+                    [
+                        purchasePrice,
+                        purchase_date,
+                        motorcycle_id
+                    ]
+                );
+            }
+
+            await connection.commit();
+
+            res.status(201).json({
+
+                success: true,
+
+                message:
+                    "Purchase successfully saved!",
+
+                purchase_id:
+                    result.insertId,
+
+                remaining_balance:
+                    remaining,
+
+                payment_status:
+                    paymentStatus
+
+            });
+
+        } catch (error) {
+
+            try {
+                await connection.rollback();
+            } catch (rollbackError) {
+                console.error(
+                    "Rollback error:",
+                    rollbackError.message
+                );
+            }
+
+            console.error(
+                "Purchase save error:",
+                error
             );
+
+            res.status(500).json({
+
+                success: false,
+
+                message:
+                    "Purchase save nahi ho saki.",
+
+                error:
+                    error.message
+
+            });
+
+        } finally {
+
+            connection.release();
         }
 
-        await connection.commit();
-
-        res.status(201).json({
-            success: true,
-            message: 'Purchase successfully saved!',
-            purchase_id: result.insertId,
-            remaining_balance: remaining,
-            payment_status: paymentStatus
-        });
-    } catch (error) {
-        await connection.rollback();
-        console.error('Purchase save error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Purchase save nahi ho saki.',
-            error: error.message
-        });
-    } finally {
-        connection.release();
     }
-});
+);
 
-app.put('/api/purchases/:id', async (req, res) => {
-    try {
-        const {
-            supplier_id, motorcycle_id, purchase_date, purchase_price,
-            payment_amount, payment_method, invoice_number, notes
-        } = req.body;
 
-        const purchasePrice = Number(purchase_price) || 0;
-        const paymentAmount = Number(payment_amount) || 0;
+app.put(
+    "/api/purchases/:id",
+    async (req, res) => {
 
-        if (!purchase_date || purchasePrice <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Purchase date aur valid purchase price required hain.'
-            });
-        }
+        try {
 
-        if (paymentAmount < 0 || paymentAmount > purchasePrice) {
-            return res.status(400).json({
-                success: false,
-                message: 'Payment amount purchase price se zyada nahi ho sakta.'
-            });
-        }
-
-        const remaining = Math.max(0, purchasePrice - paymentAmount);
-        const paymentStatus = remaining <= 0 ? 'Paid' : (paymentAmount > 0 ? 'Partial' : 'Unpaid');
-
-        const [result] = await db.query(
-            `
-            UPDATE purchases SET
-                supplier_id = ?,
-                motorcycle_id = ?,
-                purchase_date = ?,
-                purchase_price = ?,
-                payment_amount = ?,
-                remaining_balance = ?,
-                payment_status = ?,
-                payment_method = ?,
-                invoice_number = ?,
-                notes = ?
-            WHERE id = ?
-            `,
-            [
-                supplier_id || null,
-                motorcycle_id || null,
+            const {
+                supplier_id,
+                motorcycle_id,
                 purchase_date,
-                purchasePrice,
-                paymentAmount,
-                remaining,
-                paymentStatus,
-                payment_method || 'Cash',
-                invoice_number?.trim() || null,
-                notes?.trim() || null,
-                req.params.id
-            ]
-        );
+                purchase_price,
+                payment_amount,
+                payment_method,
+                invoice_number,
+                notes
+            } = req.body;
 
-        if (!result.affectedRows) {
-            return res.status(404).json({
-                success: false,
-                message: 'Purchase nahi mili.'
+            const purchasePrice =
+                Number(purchase_price) || 0;
+
+            const paymentAmount =
+                Number(payment_amount) || 0;
+
+            if (
+                !purchase_date ||
+                purchasePrice <= 0
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Purchase date aur valid purchase price required hain."
+                });
+            }
+
+            if (
+                paymentAmount < 0 ||
+                paymentAmount > purchasePrice
+            ) {
+
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Payment amount purchase price se zyada nahi ho sakta."
+                });
+            }
+
+            const remaining =
+                Math.max(
+                    0,
+                    purchasePrice - paymentAmount
+                );
+
+            const paymentStatus =
+                remaining <= 0
+                    ? "Paid"
+                    : paymentAmount > 0
+                        ? "Partial"
+                        : "Unpaid";
+
+            const [result] =
+                await db.query(
+                    `
+                    UPDATE purchases
+
+                    SET
+                        supplier_id = ?,
+                        motorcycle_id = ?,
+                        purchase_date = ?,
+                        purchase_price = ?,
+                        payment_amount = ?,
+                        remaining_balance = ?,
+                        payment_status = ?,
+                        payment_method = ?,
+                        invoice_number = ?,
+                        notes = ?
+
+                    WHERE id = ?
+                    `,
+                    [
+                        supplier_id || null,
+                        motorcycle_id || null,
+                        purchase_date,
+                        purchasePrice,
+                        paymentAmount,
+                        remaining,
+                        paymentStatus,
+                        payment_method || "Cash",
+                        invoice_number?.trim() || null,
+                        notes?.trim() || null,
+                        req.params.id
+                    ]
+                );
+
+            if (!result.affectedRows) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Purchase nahi mili."
+                });
+            }
+
+            if (motorcycle_id) {
+
+                await db.query(
+                    `
+                    UPDATE motorcycles
+
+                    SET
+                        purchase_price = ?,
+                        purchase_date = ?
+
+                    WHERE id = ?
+                    `,
+                    [
+                        purchasePrice,
+                        purchase_date,
+                        motorcycle_id
+                    ]
+                );
+            }
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Purchase successfully updated!",
+
+                remaining_balance:
+                    remaining,
+
+                payment_status:
+                    paymentStatus
+
             });
-        }
 
-        if (motorcycle_id) {
-            await db.query(
-                `
-                UPDATE motorcycles
-                SET purchase_price = ?, purchase_date = ?
-                WHERE id = ?
-                `,
-                [purchasePrice, purchase_date, motorcycle_id]
+        } catch (error) {
+
+            console.error(
+                "Purchase update error:",
+                error
             );
-        }
 
-        res.json({
-            success: true,
-            message: 'Purchase successfully updated!',
-            remaining_balance: remaining,
-            payment_status: paymentStatus
-        });
-    } catch (error) {
-        console.error('Purchase update error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Purchase update nahi ho saki.',
-            error: error.message
-        });
-    }
-});
-
-app.delete('/api/purchases/:id', async (req, res) => {
-    try {
-        const [result] = await db.query(
-            'DELETE FROM purchases WHERE id = ?',
-            [req.params.id]
-        );
-
-        if (!result.affectedRows) {
-            return res.status(404).json({
+            res.status(500).json({
                 success: false,
-                message: 'Purchase nahi mili.'
+                message:
+                    "Purchase update nahi ho saki.",
+                error: error.message
             });
         }
 
-        res.json({
-            success: true,
-            message: 'Purchase successfully deleted!'
-        });
-    } catch (error) {
-        console.error('Purchase delete error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Purchase delete nahi ho saki.',
-            error: error.message
-        });
     }
-});
+);
 
+
+app.delete(
+    "/api/purchases/:id",
+    async (req, res) => {
+
+        try {
+
+            const [result] =
+                await db.query(
+                    `
+                    DELETE FROM purchases
+                    WHERE id = ?
+                    `,
+                    [req.params.id]
+                );
+
+            if (!result.affectedRows) {
+
+                return res.status(404).json({
+                    success: false,
+                    message:
+                        "Purchase nahi mili."
+                });
+            }
+
+            res.json({
+                success: true,
+                message:
+                    "Purchase successfully deleted!"
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Purchase delete error:",
+                error
+            );
+
+            res.status(500).json({
+                success: false,
+                message:
+                    "Purchase delete nahi ho saki.",
+                error: error.message
+            });
+        }
+
+    }
+);
 
 // ======================================================
 // EXPENSES
+// ======================================================
+// FIX: /api/expenses 404
 // ======================================================
 
 app.get(
@@ -3315,6 +3711,7 @@ app.get(
 
             let sql = `
                 SELECT
+
                     id,
                     expense_title,
                     category,
@@ -3323,12 +3720,14 @@ app.get(
                     payment_method,
                     description,
                     created_at
+
                 FROM expenses
             `;
 
             const params = [];
 
             if (search) {
+
                 sql += `
                     WHERE
                         expense_title LIKE ?
@@ -3337,7 +3736,8 @@ app.get(
                         OR description LIKE ?
                 `;
 
-                const like = `%${search}%`;
+                const like =
+                    `%${search}%`;
 
                 params.push(
                     like,
@@ -3348,7 +3748,9 @@ app.get(
             }
 
             sql += `
-                ORDER BY expense_date DESC, id DESC
+                ORDER BY
+                    expense_date DESC,
+                    id DESC
             `;
 
             const [rows] =
@@ -3419,7 +3821,9 @@ app.post(
             ];
 
             const method =
-                allowedMethods.includes(payment_method)
+                allowedMethods.includes(
+                    payment_method
+                )
                     ? payment_method
                     : "Cash";
 
@@ -3435,6 +3839,7 @@ app.post(
                         payment_method,
                         description
                     )
+
                     VALUES (?, ?, ?, ?, ?, ?)
                     `,
                     [
@@ -3448,10 +3853,15 @@ app.post(
                 );
 
             res.status(201).json({
+
                 success: true,
+
                 message:
                     "Expense successfully saved!",
-                expense_id: result.insertId
+
+                expense_id:
+                    result.insertId
+
             });
 
         } catch (error) {
@@ -3462,10 +3872,15 @@ app.post(
             );
 
             res.status(500).json({
+
                 success: false,
+
                 message:
                     "Expense save nahi ho saka.",
-                error: error.message
+
+                error:
+                    error.message
+
             });
         }
 
@@ -3483,6 +3898,7 @@ app.delete(
                 await db.query(
                     `
                     DELETE FROM expenses
+
                     WHERE id = ?
                     `,
                     [req.params.id]
@@ -3521,8 +3937,6 @@ app.delete(
     }
 );
 
-
-
 // ======================================================
 // DASHBOARD
 // ======================================================
@@ -3542,12 +3956,12 @@ app.get(
                 salesResult,
                 salesAmountResult,
                 outstandingResult,
+                dueResult,
+                overdueResult,
                 purchaseCountResult,
                 purchaseAmountResult,
                 expenseCountResult,
-                expenseAmountResult,
-                dueResult,
-                overdueResult
+                expenseAmountResult
             ] = await Promise.all([
 
                 db.query(`
@@ -3588,6 +4002,7 @@ app.get(
                         SUM(total_price),
                         0
                     ) AS total
+
                     FROM sales
                 `),
 
@@ -3596,12 +4011,39 @@ app.get(
                         SUM(remaining_balance),
                         0
                     ) AS total
+
                     FROM sales
+
                     WHERE remaining_balance > 0
                 `),
 
                 db.query(`
                     SELECT COUNT(*) AS total
+
+                    FROM installments
+
+                    WHERE
+                        status IN
+                        ('Pending', 'Partial')
+
+                        AND due_date = CURDATE()
+                `),
+
+                db.query(`
+                    SELECT COUNT(*) AS total
+
+                    FROM installments
+
+                    WHERE
+                        status IN
+                        ('Pending', 'Partial')
+
+                        AND due_date < CURDATE()
+                `),
+
+                db.query(`
+                    SELECT COUNT(*) AS total
+
                     FROM purchases
                 `),
 
@@ -3610,11 +4052,13 @@ app.get(
                         SUM(purchase_price),
                         0
                     ) AS total
+
                     FROM purchases
                 `),
 
                 db.query(`
                     SELECT COUNT(*) AS total
+
                     FROM expenses
                 `),
 
@@ -3623,28 +4067,11 @@ app.get(
                         SUM(amount),
                         0
                     ) AS total
+
                     FROM expenses
-                `),
-
-                db.query(`
-                    SELECT COUNT(*) AS total
-                    FROM installments
-                    WHERE
-                        status IN
-                        ('Pending', 'Partial')
-                        AND due_date = CURDATE()
-                `),
-
-                db.query(`
-                    SELECT COUNT(*) AS total
-                    FROM installments
-                    WHERE
-                        status IN
-                        ('Pending', 'Partial')
-                        AND due_date < CURDATE()
                 `)
-            ]);
 
+            ]);
 
             res.json({
 
@@ -3729,7 +4156,6 @@ app.get(
                 error
             );
 
-
             res.status(500).json({
                 success: false,
                 message:
@@ -3741,7 +4167,6 @@ app.get(
     }
 );
 
-
 // ======================================================
 // START SERVER
 // ======================================================
@@ -3752,7 +4177,6 @@ async function startServer() {
 
         await setupDatabase();
 
-
         app.listen(
             PORT,
             () => {
@@ -3760,22 +4184,6 @@ async function startServer() {
                 console.log(
                     `Server running at http://localhost:${PORT}`
                 );
-
-                console.log(
-                    `Reminder automation check every ${Math.round(REMINDER_CHECK_INTERVAL_MS / 60000)} minute(s).`
-                );
-
-                setTimeout(() => {
-                    processReminderAutomation().catch(error =>
-                        console.error('Initial reminder check failed:', error.message)
-                    );
-                }, 3000);
-
-                setInterval(() => {
-                    processReminderAutomation().catch(error =>
-                        console.error('Scheduled reminder check failed:', error.message)
-                    );
-                }, REMINDER_CHECK_INTERVAL_MS);
 
             }
         );
@@ -3790,6 +4198,5 @@ async function startServer() {
         process.exit(1);
     }
 }
-
 
 startServer();
